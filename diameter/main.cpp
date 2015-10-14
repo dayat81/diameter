@@ -52,14 +52,7 @@ int main(int argc, char *argv[])
     n = read(newsockfd,head,4);
     if (n < 0) error("ERROR reading from socket");
     char* h=head;
-//    int i=0;
-//    while (i<4) {
-//        printf("%02X ",*h&0xff);
-//        i++;
-//        h++;
-//    }
-//    h=h-4;
-    //printf("\n");
+
     int32_t l =(((0x00 & 0xff) << 24) | ((head[1] & 0xff) << 16)| ((head[2] & 0xff) << 8) | ((head[3] & 0xff)))-4;
     //printf("len: %zu\n",l);
     char body[l];
@@ -70,47 +63,14 @@ int main(int argc, char *argv[])
     n = read(newsockfd,body,l);
     if (n < 0) error("ERROR reading from socket");
     char* b=body;
-//    i=0;
-//    while (i<l) {
-//        printf("%02X ",*b&0xff);
-//        i++;
-//        b++;
-//    }
-//    b=b-l;
-//     printf("\n");
-    
-//    i=0;
-//    while (i<4) {
-//        *r=*h;
-//        r++;
-//        h++;
-//        i++;
-//    }
-//    i=0;
-//    r=r-4;
-//    while (i<4) {
-//        printf("%02X ",*r&0xff);
-//        i++;
-//        r++;
-//    }
-//    i=0;
-//    while (i<l) {
-//        *r=*b;
-//        b++;
-//        i++;
-//        r++;
-//    }
-//    r=r-l;
-//    i=0;
-//    while (i<l) {
-//        printf("%02X ",*r&0xff);
-//        r++;
-//        i++;
-//    }
     diameter d=diameter(h,b,l);
-    d.dump();
-    printf("\n");
     d.compose(r);
+    //get avp
+    avp oh = d.getAVP(264,0);
+    printf("origin host len : %i\n",oh.len);
+    //d.dump();
+    printf("\n");
+
     n = write(newsockfd,resp,l+4);
     if (n < 0) error("ERROR writing to socket");
     close(newsockfd);
