@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		AE44E7CC1BCE063D00AE144B /* avp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE44E7CA1BCE063D00AE144B /* avp.cpp */; settings = {ASSET_TAGS = (); }; };
 		AE44E7D01BCE12DC00AE144B /* avputil.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE44E7CF1BCE12DC00AE144B /* avputil.cpp */; settings = {ASSET_TAGS = (); }; };
+		AE4F09D21BCE65E6007527EE /* entry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE4F09D11BCE65E6007527EE /* entry.cpp */; settings = {ASSET_TAGS = (); }; };
 		AE6EB3561BCD72A700D6CB1D /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE6EB3551BCD72A700D6CB1D /* main.cpp */; };
 		AE7C78C41BCDF49C00F2E48E /* diameter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE7C78C31BCDF49C00F2E48E /* diameter.cpp */; settings = {ASSET_TAGS = (); }; };
 /* End PBXBuildFile section */
@@ -30,6 +31,8 @@
 		AE44E7CD1BCE067C00AE144B /* avp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = avp.h; sourceTree = "<group>"; };
 		AE44E7CE1BCE125C00AE144B /* avputil.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = avputil.h; sourceTree = "<group>"; };
 		AE44E7CF1BCE12DC00AE144B /* avputil.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = avputil.cpp; sourceTree = "<group>"; };
+		AE4F09D01BCE656A007527EE /* entry.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = entry.h; sourceTree = "<group>"; };
+		AE4F09D11BCE65E6007527EE /* entry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = entry.cpp; sourceTree = "<group>"; };
 		AE6EB3521BCD72A700D6CB1D /* diameter */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = diameter; sourceTree = BUILT_PRODUCTS_DIR; };
 		AE6EB3551BCD72A700D6CB1D /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		AE7C78C21BCDF3E900F2E48E /* diameter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = diameter.h; sourceTree = "<group>"; };
@@ -73,6 +76,8 @@
 				AE44E7CD1BCE067C00AE144B /* avp.h */,
 				AE44E7CE1BCE125C00AE144B /* avputil.h */,
 				AE44E7CF1BCE12DC00AE144B /* avputil.cpp */,
+				AE4F09D01BCE656A007527EE /* entry.h */,
+				AE4F09D11BCE65E6007527EE /* entry.cpp */,
 			);
 			path = diameter;
 			sourceTree = "<group>";
@@ -133,6 +138,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AE4F09D21BCE65E6007527EE /* entry.cpp in Sources */,
 				AE44E7CC1BCE063D00AE144B /* avp.cpp in Sources */,
 				AE44E7D01BCE12DC00AE144B /* avputil.cpp in Sources */,
 				AE7C78C41BCDF49C00F2E48E /* diameter.cpp in Sources */,

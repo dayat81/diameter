@@ -4,12 +4,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <iostream>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include "diameter.h"
-#include "avputil.h"
+#include "entry.h"
 
 
 void error(const char *msg)
@@ -66,26 +64,8 @@ int main(int argc, char *argv[])
     if (n < 0) error("ERROR reading from socket");
     char* b=body;
     diameter d=diameter(h,b,l);
-    d.compose(r);
-    //get avp
-    d.populateHeader();
-    avputil util=avputil();
-    avp oh = d.getAVP(264,0);
-    printf("origin host len : %i\n",oh.len);
-    if(oh.len!=0){
-        std::cout<<"decoded : "<<util.decodeAsString(oh)<<std::endl;
-    }
-    avp sid=d.getAVP(443,0);
-    printf("sid len : %i\n",sid.len);
-    if(sid.len!=0){
-        //getbyavp
-        avp iddata_=util.getAVP(444, 0, sid);
-        printf("iddata_ len : %i\n",iddata_.len);
-        std::cout<<"decoded : "<<util.decodeAsString(iddata_)<<std::endl;
-    }
-    //d.dump();
-    printf("\n");
-
+    entry e=entry();
+    e.process(d, r);
     n = write(newsockfd,resp,l+4);
     if (n < 0) error("ERROR writing to socket");
     close(newsockfd);
