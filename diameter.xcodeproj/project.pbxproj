@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		AE6EB3561BCD72A700D6CB1D /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE6EB3551BCD72A700D6CB1D /* main.cpp */; };
+		AE7C78C41BCDF49C00F2E48E /* diameter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE7C78C31BCDF49C00F2E48E /* diameter.cpp */; settings = {ASSET_TAGS = (); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +26,8 @@
 /* Begin PBXFileReference section */
 		AE6EB3521BCD72A700D6CB1D /* diameter */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = diameter; sourceTree = BUILT_PRODUCTS_DIR; };
 		AE6EB3551BCD72A700D6CB1D /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		AE7C78C21BCDF3E900F2E48E /* diameter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = diameter.h; sourceTree = "<group>"; };
+		AE7C78C31BCDF49C00F2E48E /* diameter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = diameter.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +61,8 @@
 			isa = PBXGroup;
 			children = (
 				AE6EB3551BCD72A700D6CB1D /* main.cpp */,
+				AE7C78C21BCDF3E900F2E48E /* diameter.h */,
+				AE7C78C31BCDF49C00F2E48E /* diameter.cpp */,
 			);
 			path = diameter;
 			sourceTree = "<group>";
@@ -118,6 +123,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AE7C78C41BCDF49C00F2E48E /* diameter.cpp in Sources */,
 				AE6EB3561BCD72A700D6CB1D /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -235,6 +241,7 @@
 				AE6EB35B1BCD72A700D6CB1D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
