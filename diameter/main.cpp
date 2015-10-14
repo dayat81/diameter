@@ -57,15 +57,17 @@ int main(int argc, char *argv[])
     //printf("len: %zu\n",l);
     char body[l];
     
-    char resp[l+4];
-    char* r=resp;
     //bzero(next, l);
     n = read(newsockfd,body,l);
     if (n < 0) error("ERROR reading from socket");
     char* b=body;
     diameter d=diameter(h,b,l);
     entry e=entry();
-    e.process(d, r);
+    diameter reply=e.process(d);
+    char resp[reply.len+4];
+    char* r=resp;
+    reply.compose(r);
+    
     n = write(newsockfd,resp,l+4);
     if (n < 0) error("ERROR writing to socket");
     close(newsockfd);

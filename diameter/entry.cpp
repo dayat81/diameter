@@ -14,8 +14,8 @@ entry::entry(){
     
 }
 
-void entry::process(diameter d, char* r){
-    d.compose(r);
+diameter entry::process(diameter d){
+    diameter r=d;
     //get avp
     d.populateHeader();
     avputil util=avputil();
@@ -34,4 +34,6 @@ void entry::process(diameter d, char* r){
     }
     //d.dump();
     printf("\n");
+    
+    return r;
 }

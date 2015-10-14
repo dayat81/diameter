@@ -14,7 +14,7 @@
 class entry{
 public:
     entry();
-    void process(diameter d,char* r);
+    diameter process(diameter d);
 };
 
 #endif /* entry_h */

@@ -52,6 +52,7 @@ void diameter::dump(){
 }
 
 void diameter::populateHeader(){
+    cflags=*b;
     ccode=b+1;
     appId=b+4;
     hbh=b+8;
