@@ -9,7 +9,6 @@
 #include <netinet/in.h>
 #include "entry.h"
 
-
 void error(const char *msg)
 {
     perror(msg);
@@ -66,7 +65,7 @@ int main(int argc, char *argv[])
     entry e=entry();
     diameter reply=e.process(d);
     reply.dump();
-    
+    printf("\n");
     
     char resp[reply.len+4];
     char* r=resp;
