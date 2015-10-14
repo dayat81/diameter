@@ -68,11 +68,19 @@ int main(int argc, char *argv[])
     diameter d=diameter(h,b,l);
     d.compose(r);
     //get avp
+    d.populateHeader();
     avputil util=avputil();
     avp oh = d.getAVP(264,0);
     printf("origin host len : %i\n",oh.len);
     if(oh.len!=0){
         std::cout<<"decoded : "<<util.decodeAsString(oh)<<std::endl;
+    }
+    int codes[4]={443,0,444,0};
+    int* code=codes;
+    avp iddata=d.getAVP(code,4);
+    printf("iddata len : %i\n",iddata.len);
+    if(iddata.len!=0){
+        std::cout<<"decoded : "<<util.decodeAsString(iddata)<<std::endl;
     }
     //d.dump();
     printf("\n");
