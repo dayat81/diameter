@@ -17,6 +17,7 @@ entry::entry(){
 diameter entry::process(diameter d){
     //diameter r=d;
     //r.dump();
+    //MOVE BELOW CODE TO DIAMETER CLASS, add avp method
     printf("\n");
     avputil util=avputil();
     char f=0x40;

@@ -30,6 +30,9 @@ public:
     void dump();
     void populateHeader();
     avp getAVP(int acode,int vcode);
+    
+    //todo
+    //create destructor to delete h,b in heap
 };
 
 #endif /* diameter_h */
