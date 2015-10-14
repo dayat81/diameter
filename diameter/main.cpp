@@ -75,15 +75,13 @@ int main(int argc, char *argv[])
     if(oh.len!=0){
         std::cout<<"decoded : "<<util.decodeAsString(oh)<<std::endl;
     }
-//    int codes[4]={443,0,444,0};
-//    int* code=codes;
     avp sid=d.getAVP(443,0);
     printf("sid len : %i\n",sid.len);
     if(sid.len!=0){
-        d.b=d.b-sid.len;
-        avp iddata=d.getAVP(444, 0);
-        printf("iddata len : %i\n",iddata.len);
-        std::cout<<"decoded : "<<util.decodeAsString(iddata)<<std::endl;
+        //getbyavp
+        avp iddata_=util.getAVP(444, 0, sid);
+        printf("iddata_ len : %i\n",iddata_.len);
+        std::cout<<"decoded : "<<util.decodeAsString(iddata_)<<std::endl;
     }
     //d.dump();
     printf("\n");

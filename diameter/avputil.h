@@ -17,6 +17,7 @@ public:
     avputil();
     
     std::string decodeAsString(avp a);
+    avp getAVP(int acode,int vcode,avp a);
 };
 
 #endif /* avputil_h */
