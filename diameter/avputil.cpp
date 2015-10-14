@@ -75,3 +75,64 @@ avp avputil::getAVP(int acode, int vcode, avp a){
     }
     return r;
 }
+
+char* return_buffer(const std::string& string)
+{
+    char* return_string = new char[string.length() + 1];
+    strcpy(return_string, string.c_str());
+    
+    return return_string;
+}
+
+avp avputil::encodeString(int acode, int vcode, char flags, std::string value){
+    int l=value.length()+8;
+    if(vcode!=0){
+        l=l+8;
+    }
+    //char res[l];
+    char* resp=new char[l];//res;
+    char* buffer = return_buffer(value);
+    
+    
+    char *ptr = (char*)&acode;
+    ptr=ptr+3;
+    unsigned int i=0;
+    while(i<4){
+        *resp=*ptr;
+        resp++;
+        ptr--;
+        i++;
+    }
+    *resp=flags;
+    //resp=resp-4;
+    resp++;
+    //	 char *msg = new char[4];
+    //	 for(int i=0;i<4;++i, ++ptr)
+    //	    msg[3-i] = *ptr;
+    //resp=resp-4;
+    
+    char *ptr1 = (char*)&l;
+    ptr1=ptr1+2;
+    i=0;
+    while(i<3){
+        *resp=*ptr1;
+        resp++;
+        ptr1--;
+        i++;
+    }
+    //	 resp=resp-8;	//for display
+    i=0;
+    while(i<value.length()){
+        *resp=*buffer;
+        resp++;
+        buffer++;
+        i++;
+    }
+    resp=resp-l;
+    //	 char *msg1 = new char[4];
+    //	 for(int i=0;i<3;++i, ++ptr1)
+    //	    msg1[2-i] = *ptr1;
+    
+    avp a=avp(resp,l);
+    return a;
+}

@@ -62,8 +62,12 @@ int main(int argc, char *argv[])
     if (n < 0) error("ERROR reading from socket");
     char* b=body;
     diameter d=diameter(h,b,l);
+    
     entry e=entry();
     diameter reply=e.process(d);
+    reply.dump();
+    
+    
     char resp[reply.len+4];
     char* r=resp;
     reply.compose(r);

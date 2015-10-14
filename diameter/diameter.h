@@ -18,6 +18,7 @@ public:
     int len;
     int curr;
     
+    char version;
     char cflags;
     char* ccode;
     char* appId;

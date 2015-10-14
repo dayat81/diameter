@@ -37,14 +37,14 @@ void diameter::compose(char* r){
 void diameter::dump(){
     int i=0;
     while (i<4) {
-        printf("%02X ",*h&0xff);
+        printf("%02X",*h&0xff);
         i++;
         h++;
     }
     h=h-4;
     i=0;
     while (i<len) {
-        printf("%02X ",*b&0xff);
+        printf("%02X",*b&0xff);
         i++;
         b++;
     }
@@ -52,6 +52,7 @@ void diameter::dump(){
 }
 
 void diameter::populateHeader(){
+    version=*h;
     cflags=*b;
     ccode=b+1;
     appId=b+4;

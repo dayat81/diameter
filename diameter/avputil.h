@@ -18,6 +18,7 @@ public:
     
     std::string decodeAsString(avp a);
     avp getAVP(int acode,int vcode,avp a);
+    avp encodeString(int acode,int vcode,char flags,std::string value);
 };
 
 #endif /* avputil_h */
