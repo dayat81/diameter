@@ -4,10 +4,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <iostream>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include "diameter.h"
+#include "avputil.h"
 
 
 void error(const char *msg)
@@ -66,8 +68,12 @@ int main(int argc, char *argv[])
     diameter d=diameter(h,b,l);
     d.compose(r);
     //get avp
+    avputil util=avputil();
     avp oh = d.getAVP(264,0);
     printf("origin host len : %i\n",oh.len);
+    if(oh.len!=0){
+        std::cout<<"decoded : "<<util.decodeAsString(oh)<<std::endl;
+    }
     //d.dump();
     printf("\n");
 

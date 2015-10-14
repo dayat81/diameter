@@ -7,7 +7,7 @@
 //
 
 #include "avp.h"
-avp::avp(int len,char* v){
+avp::avp(char* v,int len){
     avp::len=len;
     
     avp::val=v;

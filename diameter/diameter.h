@@ -28,6 +28,7 @@ public:
     void dump();
     void populateHeader();
     avp getAVP(int acode,int vcode);
+    avp getAVP(int* code,int len);
 };
 
 #endif /* diameter_h */

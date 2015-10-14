@@ -14,7 +14,7 @@ public:
     int len;
     char* val; //pointer to value
     
-    avp(int len, char* v);
+    avp(char* v,int len);
 };
 
 #endif /* avp_h */

@@ -87,7 +87,7 @@ avp diameter::getAVP(int acode, int vcode){
             lavpval=lavpval-4;  //actual avp value length
         }
         if(acode==avpcode&&vcode==vendorcode){
-            a=avp(lavpval,b);   //point to avp val
+            a=avp(b,lavpval);   //point to avp val
             found=true;
         }
         //goto next avp
