@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include "entry.h"
 #include "avputil.h"
+#include "logic.h"
 #include <iostream>
 entry::entry(){
     
@@ -17,32 +18,37 @@ entry::entry(){
 diameter entry::process(diameter d){
     //entry screening header : command code, appId
     //avp screening/processing to logic.cpp
-    avputil util=avputil();
+    
     d.populateHeader();
     //cek header here
 
     //diameter r=d;
     //r.dump();
     //MOVE BELOW CODE TO DIAMETER CLASS, add avp method
-    printf("\n");
+    //printf("\n");
     
-    char f=0x40;
-    std::string ori ="vmclient.myrealm.example";
-    //printf("size : %i\n",ori.size());
-    avp o=util.encodeString(264,0,f,ori);
-    
-    avp id_t=util.encodeInt32(450, 0, 0x40, 1);
-    //id_t.dump();
-    printf("\n");
-    avp id_d=util.encodeString(444, 0, 0x40, "628119105569");
-    //id_d.dump();
-    avp* listavp[2]={&id_t,&id_d};
-    
-    int i=0;
-
-    avp sid=util.encodeAVP(443, 0, 0x40, listavp, 2);
-    
-    avp* allavp[2]={&o,&sid};
+//    char f=0x40;
+//    std::string ori ="vmclient.myrealm.example";
+//    //printf("size : %i\n",ori.size());
+//    avp o=util.encodeString(264,0,f,ori);
+//    
+//    avp id_t=util.encodeInt32(450, 0, 0x40, 1);
+//    //id_t.dump();
+//    printf("\n");
+//    avp id_d=util.encodeString(444, 0, 0x40, "628119105569");
+//    //id_d.dump();
+//    avp* listavp[2]={&id_t,&id_d};
+//    
+   int i=0;
+//
+//    avp sid=util.encodeAVP(443, 0, 0x40, listavp, 2);
+//    
+//    avp* allavp[2]={&o,&sid};
+    logic lojik=logic();
+    avp* allavp=new avp[1];
+    int l;
+    int total;
+    lojik.getResult(d, allavp, l,total);
     //sid.dump();
     
     //o.dump();
@@ -53,12 +59,12 @@ diameter entry::process(diameter d){
     char cflags=d.cflags^0x80;
     //printf(" avp len %i",o.len);
     //int l_resp=o.len+20+sid.len;
-    int l_resp=20;
-    while (i<2) {
-        l_resp=l_resp+allavp[i]->len;
-        //allavp[i]->dump();
-        i++;
-    }
+    int l_resp=20+total;
+//    while (i<2) {
+//        l_resp=l_resp+allavp[i].len;
+//        //allavp[i].dump();
+//        i++;
+//    }
     char *ptr1 = (char*)&l_resp;
     char l_byte[3];
     char* lp=l_byte;
@@ -92,12 +98,12 @@ diameter entry::process(diameter d){
         i++;
     }
     b=b+16;
-    for (i=0; i<2; i++) {
+    for (i=0; i<l; i++) {
         //copy avp
-        char *temp=allavp[i]->val;
-        //list[i]->dump();
+        char *temp=allavp[i].val;
+        allavp[i].dump();
         printf("\n");
-        for (int j=0; j<allavp[i]->len; j++) {
+        for (int j=0; j<allavp[i].len; j++) {
             *b=*temp;
             b++;
             temp++;
@@ -121,7 +127,7 @@ diameter entry::process(diameter d){
     diameter answer=diameter(h, b, l_resp-4);
     //answer.dump();
 
-    printf("\n");
+    //printf("\n");
     
     return answer;
 }

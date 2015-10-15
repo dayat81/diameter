@@ -259,7 +259,7 @@ avp avputil::encodeAVP(int acode, int vcode,char flags, avp* list[],int l){
         //copy avp
         char *temp=list[i]->val;
         //list[i]->dump();
-        printf("\n");
+        //printf("\n");
         for (int j=0; j<list[i]->len; j++) {
             *resp=*temp;
             resp++;
@@ -268,7 +268,7 @@ avp avputil::encodeAVP(int acode, int vcode,char flags, avp* list[],int l){
     }
     resp=resp-totallen;
     avp a=avp(resp,totallen);
-    printf("\n");
-    a.dump();
+    //printf("\n");
+    //a.dump();
     return a;
 }

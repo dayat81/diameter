@@ -13,7 +13,9 @@ avp::avp(char* v,int len){
     
     avp::val=v;
 }
-
+avp::avp(){
+    
+}
 
 void avp::dump(){
     int i=0;
