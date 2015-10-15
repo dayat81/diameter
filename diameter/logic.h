@@ -14,6 +14,8 @@ class logic{
 public:
     logic();
     void getResult(diameter d,avp* &allavp,int &l,int &total);
+    void getCEA(diameter d,avp* &allavp,int &l,int &total);
+    void getUnable2Comply(diameter d,avp* &allavp,int &l,int &total);
 };
 
 #endif /* logic_h */

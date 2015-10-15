@@ -20,24 +20,10 @@ diameter entry::process(diameter d){
     //avp screening/processing to logic.cpp
     
     d.populateHeader();
+    int ccode=((*(d.ccode) & 0xff) << 16)| ((*(d.ccode+1) & 0xff) << 8) | ((*(d.ccode+2)& 0xff));
+    printf("printf ccode : %i\n",ccode);
     //cek header here
 
-    //diameter r=d;
-    //r.dump();
-    //MOVE BELOW CODE TO DIAMETER CLASS, add avp method
-    //printf("\n");
-    
-//    char f=0x40;
-//    std::string ori ="vmclient.myrealm.example";
-//    //printf("size : %i\n",ori.size());
-//    avp o=util.encodeString(264,0,f,ori);
-//    
-//    avp id_t=util.encodeInt32(450, 0, 0x40, 1);
-//    //id_t.dump();
-//    printf("\n");
-//    avp id_d=util.encodeString(444, 0, 0x40, "628119105569");
-//    //id_d.dump();
-//    avp* listavp[2]={&id_t,&id_d};
 //    
    int i=0;
 //
@@ -48,11 +34,15 @@ diameter entry::process(diameter d){
     avp* allavp=new avp[1];
     int l;
     int total;
-    lojik.getResult(d, allavp, l,total);
-    //sid.dump();
     
-    //o.dump();
-    //d.populateHeader();
+    //CALL LOGIC HERE
+    //lojik.getResult(d, allavp, l,total);
+    if (ccode==257) {
+        lojik.getCEA(d, allavp, l, total);
+    }else{
+        
+    }
+
     char* h=new char[4];
     *h=d.version;
     
@@ -60,11 +50,7 @@ diameter entry::process(diameter d){
     //printf(" avp len %i",o.len);
     //int l_resp=o.len+20+sid.len;
     int l_resp=20+total;
-//    while (i<2) {
-//        l_resp=l_resp+allavp[i].len;
-//        //allavp[i].dump();
-//        i++;
-//    }
+
     char *ptr1 = (char*)&l_resp;
     char l_byte[3];
     char* lp=l_byte;
@@ -110,24 +96,9 @@ diameter entry::process(diameter d){
         }
     }
     b=b-l_resp+4;
-    //copy avp to body
-//    i=0;
-//    while(i<o.len){
-//        *(b+i+16)=*o.val;
-//        i++;
-//        o.val++;
-//    }
-//    i=0;
-//    while(i<sid.len){
-//        *(b+i+16+o.len)=*sid.val;
-//        i++;
-//        sid.val++;
-//    }
-    //char* b=body;
-    diameter answer=diameter(h, b, l_resp-4);
-    //answer.dump();
 
-    //printf("\n");
+    diameter answer=diameter(h, b, l_resp-4);
+
     
     return answer;
 }
