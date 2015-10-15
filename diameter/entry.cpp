@@ -16,18 +16,11 @@ entry::entry(){
 
 diameter entry::process(diameter d){
     //entry screening header : command code, appId
-    //avp screening to logic.cpp
+    //avp screening/processing to logic.cpp
     avputil util=avputil();
     d.populateHeader();
-//    avp sid=d.getAVP(443, 0);
-//    printf("sid len : %i\n",sid.len);
-//    if(sid.len>0){
-//        avp id_type=util.getAVP(450, 0, sid);
-//        printf("id_type len : %i\n",id_type.len);
-//        if(id_type.len>0){
-//            printf("decoded : %i\n",util.decodeAsInt(id_type));
-//        }
-//    }
+    //cek header here
+
     //diameter r=d;
     //r.dump();
     //MOVE BELOW CODE TO DIAMETER CLASS, add avp method
@@ -44,14 +37,12 @@ diameter entry::process(diameter d){
     avp id_d=util.encodeString(444, 0, 0x40, "628119105569");
     //id_d.dump();
     avp* listavp[2]={&id_t,&id_d};
+    
     int i=0;
-////    int totallen=0;
-//    while (i<2) {
-//        printf("\n");
-//        listavp[i]->dump();
-//        i++;
-//    }
+
     avp sid=util.encodeAVP(443, 0, 0x40, listavp, 2);
+    
+    avp* allavp[2]={&o,&sid};
     //sid.dump();
     
     //o.dump();
@@ -61,7 +52,13 @@ diameter entry::process(diameter d){
     
     char cflags=d.cflags^0x80;
     //printf(" avp len %i",o.len);
-    int l_resp=o.len+20+sid.len;
+    //int l_resp=o.len+20+sid.len;
+    int l_resp=20;
+    while (i<2) {
+        l_resp=l_resp+allavp[i]->len;
+        //allavp[i]->dump();
+        i++;
+    }
     char *ptr1 = (char*)&l_resp;
     char l_byte[3];
     char* lp=l_byte;
@@ -94,19 +91,32 @@ diameter entry::process(diameter d){
         d.appId++;
         i++;
     }
+    b=b+16;
+    for (i=0; i<2; i++) {
+        //copy avp
+        char *temp=allavp[i]->val;
+        //list[i]->dump();
+        printf("\n");
+        for (int j=0; j<allavp[i]->len; j++) {
+            *b=*temp;
+            b++;
+            temp++;
+        }
+    }
+    b=b-l_resp+4;
     //copy avp to body
-    i=0;
-    while(i<o.len){
-        *(b+i+16)=*o.val;
-        i++;
-        o.val++;
-    }
-    i=0;
-    while(i<sid.len){
-        *(b+i+16+o.len)=*sid.val;
-        i++;
-        sid.val++;
-    }
+//    i=0;
+//    while(i<o.len){
+//        *(b+i+16)=*o.val;
+//        i++;
+//        o.val++;
+//    }
+//    i=0;
+//    while(i<sid.len){
+//        *(b+i+16+o.len)=*sid.val;
+//        i++;
+//        sid.val++;
+//    }
     //char* b=body;
     diameter answer=diameter(h, b, l_resp-4);
     //answer.dump();
