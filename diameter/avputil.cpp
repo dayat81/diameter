@@ -25,6 +25,19 @@ std::string avputil::decodeAsString(avp a){
     return res;
 }
 
+int avputil::decodeAsInt(avp a){
+    int i=a.len-1;
+    int res=(*a.val&0xff<<(8*i));
+    a.val++;
+    i--;
+    while (i>=0) {
+        res=res|(*a.val&0xff<<(8*i));
+        i--;
+        a.val++;
+    }
+    return res;
+}
+
 avp avputil::getAVP(int acode, int vcode, avp a){
     int cc=0;
     char* p=a.val;
@@ -136,3 +149,82 @@ avp avputil::encodeString(int acode, int vcode, char flags, std::string value){
     avp a=avp(resp,l);
     return a;
 }
+
+avp avputil::encodeInt32(int acode, int vcode, char flags, int value){
+    
+    int l=12;
+    if(vcode!=0){
+        l=l+8;
+    }
+    //char res[l];
+    char* resp=new char[l];//res;
+    
+    
+    
+    char *ptr = (char*)&acode;
+    ptr=ptr+3;
+    unsigned int i=0;
+    while(i<4){
+        *resp=*ptr;
+        resp++;
+        ptr--;
+        i++;
+    }
+    *resp=flags;
+    //resp=resp-4;
+    resp++;
+    //	 char *msg = new char[4];
+    //	 for(int i=0;i<4;++i, ++ptr)
+    //	    msg[3-i] = *ptr;
+    //resp=resp-4;
+    
+    char *ptr1 = (char*)&l;
+    ptr1=ptr1+2;
+    i=0;
+    while(i<3){
+        *resp=*ptr1;
+        resp++;
+        ptr1--;
+        i++;
+    }
+    //	 resp=resp-8;	//for display
+    
+    char bytes[4];
+    //
+    bytes[0] = (value >> 24) & 0xFF;
+    bytes[1] = (value >> 16) & 0xFF;
+    bytes[2] = (value >> 8) & 0xFF;
+    bytes[3] = value & 0xFF;
+    char* b=bytes;
+    i=0;
+    while(i<4){
+        *resp=*b;
+        resp++;
+        b++;
+        i++;
+    }
+    resp=resp-l;
+    //	 char *msg1 = new char[4];
+    //	 for(int i=0;i<3;++i, ++ptr1)
+    //	    msg1[2-i] = *ptr1;
+    
+    avp a=avp(resp,l);
+    return a;
+    
+
+//    avp a=avp(b,4);
+//    
+//    return a;
+}
+//
+//avp avputil::encodeAVP(int acode, int vcode, avp list[]){
+//    avp a=avp(0,0);
+//    int totallen=0;
+//    for (int i=0; i<sizeof(list); i++) {
+//        //count total length
+//        avp temp=list[i];
+//        totallen=totallen+temp.len;
+//    }
+//    
+//    return a;
+//}

@@ -15,23 +15,40 @@ entry::entry(){
 }
 
 diameter entry::process(diameter d){
+    //entry screening header : command code, appId
+    //avp screening to logic.cpp
+    avputil util=avputil();
+    d.populateHeader();
+//    avp sid=d.getAVP(443, 0);
+//    printf("sid len : %i\n",sid.len);
+//    if(sid.len>0){
+//        avp id_type=util.getAVP(450, 0, sid);
+//        printf("id_type len : %i\n",id_type.len);
+//        if(id_type.len>0){
+//            printf("decoded : %i\n",util.decodeAsInt(id_type));
+//        }
+//    }
     //diameter r=d;
     //r.dump();
     //MOVE BELOW CODE TO DIAMETER CLASS, add avp method
     printf("\n");
-    avputil util=avputil();
+    
     char f=0x40;
     std::string ori ="vmclient.myrealm.example";
     //printf("size : %i\n",ori.size());
     avp o=util.encodeString(264,0,f,ori);
+    
+    avp id_t=util.encodeInt32(450, 0, 0x40, 1);
+    //id_t.dump();
+    
     //o.dump();
-    d.populateHeader();
+    //d.populateHeader();
     char* h=new char[4];
     *h=d.version;
     
     char cflags=d.cflags^0x80;
     //printf(" avp len %i",o.len);
-    int l_resp=o.len+20;
+    int l_resp=o.len+20+id_t.len;
     char *ptr1 = (char*)&l_resp;
     char l_byte[3];
     char* lp=l_byte;
@@ -71,9 +88,15 @@ diameter entry::process(diameter d){
         i++;
         o.val++;
     }
+    i=0;
+    while(i<id_t.len){
+        *(b+i+16+o.len)=*id_t.val;
+        i++;
+        id_t.val++;
+    }
     //char* b=body;
     diameter answer=diameter(h, b, l_resp-4);
-    answer.dump();
+    //answer.dump();
 
     printf("\n");
     

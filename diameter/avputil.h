@@ -17,8 +17,13 @@ public:
     avputil();
     
     std::string decodeAsString(avp a);
+    int decodeAsInt(avp a);
+    
     avp getAVP(int acode,int vcode,avp a);
+    
     avp encodeString(int acode,int vcode,char flags,std::string value);
+    avp encodeInt32(int acode,int vcode,char flags,int value);
+    //avp encodeAVP(int acode,int vcode,avp list[]);
 };
 
 #endif /* avputil_h */

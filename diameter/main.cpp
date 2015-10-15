@@ -64,14 +64,14 @@ int main(int argc, char *argv[])
     
     entry e=entry();
     diameter reply=e.process(d);
-    reply.dump();
+    //reply.dump();
     printf("\n");
     
     char resp[reply.len+4];
     char* r=resp;
     reply.compose(r);
     
-    n = write(newsockfd,resp,l+4);
+    n = write(newsockfd,resp,reply.len+4);
     if (n < 0) error("ERROR writing to socket");
     close(newsockfd);
     close(sockfd);
