@@ -40,6 +40,19 @@ diameter entry::process(diameter d){
     
     avp id_t=util.encodeInt32(450, 0, 0x40, 1);
     //id_t.dump();
+    printf("\n");
+    avp id_d=util.encodeString(444, 0, 0x40, "628119105569");
+    //id_d.dump();
+    avp* listavp[2]={&id_t,&id_d};
+    int i=0;
+////    int totallen=0;
+//    while (i<2) {
+//        printf("\n");
+//        listavp[i]->dump();
+//        i++;
+//    }
+    avp sid=util.encodeAVP(443, 0, 0x40, listavp, 2);
+    //sid.dump();
     
     //o.dump();
     //d.populateHeader();
@@ -48,12 +61,12 @@ diameter entry::process(diameter d){
     
     char cflags=d.cflags^0x80;
     //printf(" avp len %i",o.len);
-    int l_resp=o.len+20+id_t.len;
+    int l_resp=o.len+20+sid.len;
     char *ptr1 = (char*)&l_resp;
     char l_byte[3];
     char* lp=l_byte;
     ptr1=ptr1+2;
-    int i=0;
+    i=0;
     while(i<3){
          *lp=*ptr1;
          lp++;
@@ -89,10 +102,10 @@ diameter entry::process(diameter d){
         o.val++;
     }
     i=0;
-    while(i<id_t.len){
-        *(b+i+16+o.len)=*id_t.val;
+    while(i<sid.len){
+        *(b+i+16+o.len)=*sid.val;
         i++;
-        id_t.val++;
+        sid.val++;
     }
     //char* b=body;
     diameter answer=diameter(h, b, l_resp-4);

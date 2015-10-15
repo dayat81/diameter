@@ -217,14 +217,58 @@ avp avputil::encodeInt32(int acode, int vcode, char flags, int value){
 //    return a;
 }
 //
-//avp avputil::encodeAVP(int acode, int vcode, avp list[]){
-//    avp a=avp(0,0);
-//    int totallen=0;
-//    for (int i=0; i<sizeof(list); i++) {
-//        //count total length
-//        avp temp=list[i];
-//        totallen=totallen+temp.len;
-//    }
-//    
-//    return a;
-//}
+avp avputil::encodeAVP(int acode, int vcode,char flags, avp* list[],int l){
+    //avp a=avp(0,0);
+    int totallen=8;
+    for (int i=0; i<l; i++) {
+        //count total length
+        totallen=totallen+list[i]->len;
+    }
+    if(vcode!=0){
+        totallen=totallen+8;
+    }
+    char* resp=new char[totallen];//res;
+    char *ptr = (char*)&acode;
+    ptr=ptr+3;
+    int i=0;
+    while(i<4){
+        *resp=*ptr;
+        resp++;
+        ptr--;
+        i++;
+    }
+    *resp=flags;
+    //resp=resp-4;
+    resp++;
+    //	 char *msg = new char[4];
+    //	 for(int i=0;i<4;++i, ++ptr)
+    //	    msg[3-i] = *ptr;
+    //resp=resp-4;
+    
+    char *ptr1 = (char*)&totallen;
+    ptr1=ptr1+2;
+    i=0;
+    while(i<3){
+        *resp=*ptr1;
+        resp++;
+        ptr1--;
+        i++;
+    }
+    //copy avps to rest of bytes
+    for (i=0; i<l; i++) {
+        //copy avp
+        char *temp=list[i]->val;
+        //list[i]->dump();
+        printf("\n");
+        for (int j=0; j<list[i]->len; j++) {
+            *resp=*temp;
+            resp++;
+            temp++;
+        }
+    }
+    resp=resp-totallen;
+    avp a=avp(resp,totallen);
+    printf("\n");
+    a.dump();
+    return a;
+}

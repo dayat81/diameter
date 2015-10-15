@@ -14,6 +14,7 @@ avp::avp(char* v,int len){
     avp::val=v;
 }
 
+
 void avp::dump(){
     int i=0;
     while (i<len) {
@@ -21,4 +22,5 @@ void avp::dump(){
         val++;
         i++;
     }
+    val=val-len;
 }
