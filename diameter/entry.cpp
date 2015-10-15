@@ -40,7 +40,7 @@ diameter entry::process(diameter d){
     if (ccode==257) {
         lojik.getCEA(d, allavp, l, total);
     }else{
-        
+        lojik.getUnable2Comply(d, allavp, l, total);
     }
 
     char* h=new char[4];
