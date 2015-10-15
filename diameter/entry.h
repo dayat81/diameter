@@ -17,4 +17,4 @@ public:
     diameter process(diameter d);
 };
 
-#endif /* entry_h */
+#endif /* entry_h */ 

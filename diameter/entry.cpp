@@ -22,7 +22,7 @@ diameter entry::process(diameter d){
     d.populateHeader();
     int ccode=((*(d.ccode) & 0xff) << 16)| ((*(d.ccode+1) & 0xff) << 8) | ((*(d.ccode+2)& 0xff));
     printf("printf ccode : %i\n",ccode);
-    //cek header here
+    //cek header here 
 
 //    
    int i=0;

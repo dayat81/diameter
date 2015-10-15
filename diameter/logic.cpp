@@ -12,7 +12,7 @@
 #include "avputil.h"
 
 logic::logic(){
-    
+    //
 }
 
 void logic::getResult(diameter d,avp* &allavp,int &l,int &total){

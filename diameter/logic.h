@@ -18,4 +18,4 @@ public:
     void getUnable2Comply(diameter d,avp* &allavp,int &l,int &total);
 };
 
-#endif /* logic_h */
+#endif /* logic_h */ 
