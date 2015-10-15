@@ -101,8 +101,8 @@ diameter entry::process(diameter d){
     for (i=0; i<l; i++) {
         //copy avp
         char *temp=allavp[i].val;
-        allavp[i].dump();
-        printf("\n");
+        //allavp[i].dump();
+        //printf("\n");
         for (int j=0; j<allavp[i].len; j++) {
             *b=*temp;
             b++;

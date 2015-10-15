@@ -7,6 +7,7 @@
 //
 
 #include <stdio.h>
+#include <iostream>
 #include "logic.h"
 #include "avputil.h"
 
@@ -16,12 +17,20 @@ logic::logic(){
 
 void logic::getResult(diameter d,avp* &allavp,int &l,int &total){
     avputil util=avputil();
+    
+    //read avp
+    avp ori_host=d.getAVP(264, 0);
+    printf("ori len %i \n",ori_host.len);
+    if(ori_host.len>0){
+        std::cout<<util.decodeAsString(ori_host)<<std::endl;
+    }
+    
     char f=0x40;
     std::string ori ="vmclient.myrealm.example";
     //printf("size : %i\n",ori.size());
     avp o=util.encodeString(264,0,f,ori);
-    o.dump();
-    printf("\n");
+    //o.dump();
+    //printf("\n");
     avp id_t=util.encodeInt32(450, 0, 0x40, 1);
     //id_t.dump();
     //printf("\n");
@@ -32,8 +41,8 @@ void logic::getResult(diameter d,avp* &allavp,int &l,int &total){
     //int i=0;
     
     avp sid=util.encodeAVP(443, 0, 0x40, listavp, 2);
-    sid.dump();
-    printf("\n");
+    //sid.dump();
+    //printf("\n");
     total=sid.len+o.len;
     l=2;
     allavp=new avp[2];
