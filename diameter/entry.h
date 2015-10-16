@@ -10,12 +10,22 @@
 #define entry_h
 
 #include "diameter.h"
-
-class entry{
+class CallbackInterface
+{
 public:
-    entry();
+    // The prefix "cbi" is to prevent naming clashes.
+    virtual int cbiCallbackFunction(int,int) = 0;
+};
+class entry{
+private:
+    // The callback provided by the client via connectCallback().
+    CallbackInterface *m_cb;
+public:
+    entry(int sock);
+    int sock;
     diameter process(diameter d);
-    
+    void connectCallback(CallbackInterface *cb);
+    void test();
 };
 
 #endif /* entry_h */ 

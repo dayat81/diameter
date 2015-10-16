@@ -10,18 +10,30 @@
 #include <iostream>
 #include "entry.h"
 
+//this class maintain socket list
+class Callee : public CallbackInterface
+{
+public:
+    // The callback function that Caller will call.
+    int cbiCallbackFunction(int sock,int i)
+    {
+        printf("  Callee::cbiCallbackFunction() inside callback\n");
+        return sock * i;
+    }
+};
 void error(const char *msg)
 {
     perror(msg);
     exit(1);
 }
-void foo( std::string& str, char ch,int sock, int sz,std::string host )
-{
-    std::cout << "foo( '" << str << "', '" << ch << "', " << sz << " )\n"<<host<<" "<<sock<<std::endl ;
-    str += std::string( sz, ch ) ;
-}
+//void foo( std::string& str, char ch,int sock, int sz,std::string host )
+//{
+//    std::cout << "foo( '" << str << "', '" << ch << "', " << sz << " )\n"<<host<<" "<<sock<<std::endl ;
+//    str += std::string( sz, ch ) ;
+//}
 int main(int argc, char *argv[])
 {
+    Callee callee;
     int sockfd, newsockfd, portno;
     socklen_t clilen;
     char head[4];
@@ -67,12 +79,13 @@ int main(int argc, char *argv[])
     char* b=body;
     diameter d=diameter(h,b,l);
     
-    entry e=entry();
+    entry e=entry(newsockfd);
+    e.connectCallback(&callee);
     diameter reply=e.process(d);
     //reply.dump();
     //printf("\n");
     std::string str = "hello world" ;
-    reply.mylibfun_add_tail( 1, 4, foo, std::ref(str), '!' ,newsockfd) ;
+    //reply.mylibfun_add_tail( 1, 4, foo, std::ref(str), '!' ,newsockfd) ;
     std::cout << "str: '" << str << " "<<newsockfd<<"'\n------------------------\n" ;
     
     char resp[reply.len+4];

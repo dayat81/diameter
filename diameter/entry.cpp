@@ -11,12 +11,12 @@
 #include "avputil.h"
 #include "logic.h"
 #include <iostream>
-entry::entry(){
-    
+entry::entry(int sock){
+    entry::sock=sock;
 }
 
 diameter entry::process(diameter d){
-    
+    test();
     //entry screening header : command code, appId
     //avp screening/processing to logic.cpp
     
@@ -103,4 +103,18 @@ diameter entry::process(diameter d){
 
     
     return answer;
+}
+
+void entry::connectCallback(CallbackInterface *cb)
+{
+    entry::m_cb = cb;
+}
+
+// Test the callback to make sure it works.
+void entry::test()
+{
+    printf("Caller::test() calling callback...\n");
+    int i = entry::m_cb -> cbiCallbackFunction(sock,10);
+    
+    printf("Result (): %d\n", i);
 }
