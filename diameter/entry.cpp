@@ -16,6 +16,7 @@ entry::entry(){
 }
 
 diameter entry::process(diameter d){
+    
     //entry screening header : command code, appId
     //avp screening/processing to logic.cpp
     
@@ -98,6 +99,7 @@ diameter entry::process(diameter d){
     b=b-l_resp+4;
 
     diameter answer=diameter(h, b, l_resp-4);
+    answer.host="peerhost";
 
     
     return answer;

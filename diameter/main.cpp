@@ -15,9 +15,9 @@ void error(const char *msg)
     perror(msg);
     exit(1);
 }
-void foo( std::string& str, char ch, int sz )
+void foo( std::string& str, char ch,int sock, int sz,std::string host )
 {
-    std::cout << "foo( '" << str << "', '" << ch << "', " << sz << " )\n" ;
+    std::cout << "foo( '" << str << "', '" << ch << "', " << sz << " )\n"<<host<<" "<<sock<<std::endl ;
     str += std::string( sz, ch ) ;
 }
 int main(int argc, char *argv[])
@@ -72,8 +72,8 @@ int main(int argc, char *argv[])
     //reply.dump();
     //printf("\n");
     std::string str = "hello world" ;
-    e.mylibfun_add_tail( 1, 4, foo, std::ref(str), '!' ) ;
-    std::cout << "str: '" << str << "'\n------------------------\n" ;
+    reply.mylibfun_add_tail( 1, 4, foo, std::ref(str), '!' ,newsockfd) ;
+    std::cout << "str: '" << str << " "<<newsockfd<<"'\n------------------------\n" ;
     
     char resp[reply.len+4];
     char* r=resp;

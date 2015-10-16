@@ -10,6 +10,8 @@
 #define diameter_h
 
 #include "avp.h"
+#include <functional>
+#include <string>
 
 class diameter{
 public:
@@ -17,6 +19,7 @@ public:
     char* b;
     int len;
     int curr;
+    std::string host;
     
     char version;
     char cflags;
@@ -30,7 +33,18 @@ public:
     void dump();
     void populateHeader();
     avp getAVP(int acode,int vcode);
-    
+  
+    // call function with one extrar (int by value) last parameter
+    template < typename FN, typename... ARGS >
+    void mylibfun_add_tail( int a, int b, FN&& fn, ARGS&&... args )
+    {
+        if( a<b )//cek successful cea here
+        {
+            const int extra_param = a + b ;
+            // call function with an additional int as the last argument
+            std::bind( std::forward<FN>(fn), std::forward<ARGS>(args)..., extra_param,host )() ;
+        }
+    }
     //todo
     //create destructor to delete h,b in heap
 };
