@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <iostream>
 #include "entry.h"
 
 void error(const char *msg)
@@ -14,7 +15,11 @@ void error(const char *msg)
     perror(msg);
     exit(1);
 }
-
+void foo( std::string& str, char ch, int sz )
+{
+    std::cout << "foo( '" << str << "', '" << ch << "', " << sz << " )\n" ;
+    str += std::string( sz, ch ) ;
+}
 int main(int argc, char *argv[])
 {
     int sockfd, newsockfd, portno;
@@ -66,6 +71,9 @@ int main(int argc, char *argv[])
     diameter reply=e.process(d);
     //reply.dump();
     //printf("\n");
+    std::string str = "hello world" ;
+    e.mylibfun_add_tail( 1, 4, foo, std::ref(str), '!' ) ;
+    std::cout << "str: '" << str << "'\n------------------------\n" ;
     
     char resp[reply.len+4];
     char* r=resp;
