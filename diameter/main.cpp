@@ -15,33 +15,28 @@
 #include <iostream>
 #include <vector>
 #include <pthread.h>
+#include <assert.h>
+#include "rocksdb/db.h"
 #include "entry.h"
 
 #define PORT    "3868" /* Port to listen on */
 #define BACKLOG     10  /* Passed to listen() */
 
-struct socketpeer {
-    int socket;
-    std::string peer;
-} ;
-//std::vector<socketpeer> *vect;
 //this class maintain socket list
 class Callee : public CallbackInterface
 {
 public:
     int socket;
-    std::vector<socketpeer> *vect;
+    rocksdb::DB* db;
     // The callback function that Caller will call.
     void cbiCallbackFunction(std::string host)
     {
         printf("  Callee::cbiCallbackFunction() inside callback\n");
         std::cout<<host<<","<<socket<<std::endl;
-//        socketpeer mine;
-//        mine.peer=host;
-//        mine.socket=socket;
-//        vect->push_back(mine);
-        //        char r[1]={'a'};
-        //        int res=write(socket,r,1);
+        std::string value;
+        rocksdb::Slice key = "hello";
+        rocksdb::Status status=db->Get(rocksdb::ReadOptions(), key, &value);
+        std::cout<<value<<std::endl;
     }
 };
 
@@ -51,9 +46,19 @@ static void wait_for_child(int sig)
     while (waitpid(-1, NULL, WNOHANG) > 0);
 }
 void *handle(void *);
+rocksdb::DB* db;
+rocksdb::Options options;
 int main(void)
 {
-    std::vector<socketpeer> *vect = new std::vector<socketpeer>;
+    options.create_if_missing = true;
+    rocksdb::Status status = rocksdb::DB::Open(options, "/tmp/testdb", &db);
+    assert(status.ok());
+    rocksdb::Slice key = "hello";
+    //rocksdb::Slice val = "world";
+    //status = db->Put(rocksdb::WriteOptions(), key, val);
+    std::string value;
+    status=db->Get(rocksdb::ReadOptions(), key, &value);
+    std::cout<<value<<std::endl;
     
     int sock;
     struct sigaction sa;
@@ -106,9 +111,6 @@ int main(void)
     }
     /* Main loop */
     while (1) {
-        for (std::vector<socketpeer>::iterator it = vect->begin() ; it != vect->end(); ++it)
-            std::cout << ' oi ' << it->peer;
-        std::cout << '\n';
         struct sockaddr cli_addr;
         socklen_t clilen;
         
@@ -147,7 +149,7 @@ void *handle(void *sock){
     entry e=entry();
     Callee callee;
     callee.socket=newsock;
-    //callee.vect=vect;
+    callee.db=db;
     e.connectCallback(&callee);
     diameter reply=e.process(d);
     
