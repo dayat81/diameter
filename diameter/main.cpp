@@ -12,8 +12,8 @@
 #include <signal.h>
 #include <sys/wait.h>
 #include <netdb.h>
-#include <map>
 #include <iostream>
+#include <sys/mman.h>
 #include "entry.h"
 
 #define PORT    "3868" /* Port to listen on */
@@ -23,23 +23,24 @@
 class Callee : public CallbackInterface
 {
 public:
-    std::map<std::string, int> m;
+    int socket;
     // The callback function that Caller will call.
     void cbiCallbackFunction(int sock,std::string host)
     {
         printf("  Callee::cbiCallbackFunction() inside callback\n");
-        //std::cout<<sock<<" "<<host<<std::endl;
-        m.insert({host,sock});
+        std::cout<<host<<" "<<sock<<std::endl;
+//        char r[1]={'a'};
+//        int res=write(socket,r,1);
     }
 };
-Callee callee;
+
 /* Signal handler to reap zombie processes */
 static void wait_for_child(int sig)
 {
     while (waitpid(-1, NULL, WNOHANG) > 0);
 }
 
-void handle(int newsock)
+void handle(int newsock,int* num)
 {
     /* recv(), send(), close() */
     char head[4];
@@ -53,19 +54,13 @@ void handle(int newsock)
     n = read(newsock,body,l);
     char* b=body;
     diameter d=diameter(h,b,l);
-    
-    entry e=entry(newsock);
+    printf("num : %i\n",*num);
+    entry e=entry(*num);
+    Callee callee;
+    callee.socket=newsock;
     e.connectCallback(&callee);
     diameter reply=e.process(d);
-    std::map<std::string, int>::iterator it;
-    
-    for ( it = callee.m.begin(); it != callee.m.end(); it++ )
-    {
-        std::cout << it->first  // string (key)
-        << ' = '
-        << it->second   // string's value
-        << std::endl ;
-    }
+
     char resp[reply.len+4];
     char* r=resp;
     reply.compose(r);
@@ -124,7 +119,8 @@ int main(void)
         perror("sigaction");
         return 1;
     }
-    
+    int *num = (int*)mmap(NULL, sizeof(int), PROT_READ|PROT_WRITE, MAP_ANON|MAP_SHARED, -1, 0);
+    *num = 0;
     /* Main loop */
     while (1) {
         struct sockaddr cli_addr;
@@ -142,7 +138,9 @@ int main(void)
         if (pid == 0) {
             /* In child process */
             close(sock);
-            handle(newsock);
+            *num=*num+1;
+            printf("handle num : %i\n",*num);
+            handle(newsock,num);
             return 0;
         }
         else {
