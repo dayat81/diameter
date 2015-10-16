@@ -14,15 +14,14 @@ class CallbackInterface
 {
 public:
     // The prefix "cbi" is to prevent naming clashes.
-    virtual void cbiCallbackFunction(int,std::string) = 0;
+    virtual void cbiCallbackFunction(std::string) = 0;
 };
 class entry{
 private:
     // The callback provided by the client via connectCallback().
     CallbackInterface *m_cb;
 public:
-    entry(int sock);
-    int sock;
+    entry();
     diameter process(diameter d);
     void connectCallback(CallbackInterface *cb);
     void test(std::string host);

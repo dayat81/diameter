@@ -13,24 +13,35 @@
 #include <sys/wait.h>
 #include <netdb.h>
 #include <iostream>
-#include <sys/mman.h>
+#include <vector>
+#include <pthread.h>
 #include "entry.h"
 
 #define PORT    "3868" /* Port to listen on */
 #define BACKLOG     10  /* Passed to listen() */
 
+struct socketpeer {
+    int socket;
+    std::string peer;
+} ;
+//std::vector<socketpeer> *vect;
 //this class maintain socket list
 class Callee : public CallbackInterface
 {
 public:
     int socket;
+    std::vector<socketpeer> *vect;
     // The callback function that Caller will call.
-    void cbiCallbackFunction(int sock,std::string host)
+    void cbiCallbackFunction(std::string host)
     {
         printf("  Callee::cbiCallbackFunction() inside callback\n");
-        std::cout<<host<<" "<<sock<<std::endl;
-//        char r[1]={'a'};
-//        int res=write(socket,r,1);
+        std::cout<<host<<","<<socket<<std::endl;
+//        socketpeer mine;
+//        mine.peer=host;
+//        mine.socket=socket;
+//        vect->push_back(mine);
+        //        char r[1]={'a'};
+        //        int res=write(socket,r,1);
     }
 };
 
@@ -39,37 +50,11 @@ static void wait_for_child(int sig)
 {
     while (waitpid(-1, NULL, WNOHANG) > 0);
 }
-
-void handle(int newsock,int* num)
-{
-    /* recv(), send(), close() */
-    char head[4];
-    int n = read(newsock,head,4);
-    char* h=head;
-    
-    int32_t l =(((0x00 & 0xff) << 24) | ((head[1] & 0xff) << 16)| ((head[2] & 0xff) << 8) | ((head[3] & 0xff)))-4;
-    printf("len: %zu\n",l);
-    
-    char body[l];
-    n = read(newsock,body,l);
-    char* b=body;
-    diameter d=diameter(h,b,l);
-    printf("num : %i\n",*num);
-    entry e=entry(*num);
-    Callee callee;
-    callee.socket=newsock;
-    e.connectCallback(&callee);
-    diameter reply=e.process(d);
-
-    char resp[reply.len+4];
-    char* r=resp;
-    reply.compose(r);
-    
-    n = write(newsock,resp,reply.len+4);
-}
-
+void *handle(void *);
 int main(void)
 {
+    std::vector<socketpeer> *vect = new std::vector<socketpeer>;
+    
     int sock;
     struct sigaction sa;
     struct addrinfo hints, *res;
@@ -119,43 +104,57 @@ int main(void)
         perror("sigaction");
         return 1;
     }
-    int *num = (int*)mmap(NULL, sizeof(int), PROT_READ|PROT_WRITE, MAP_ANON|MAP_SHARED, -1, 0);
-    *num = 0;
     /* Main loop */
     while (1) {
+        for (std::vector<socketpeer>::iterator it = vect->begin() ; it != vect->end(); ++it)
+            std::cout << ' oi ' << it->peer;
+        std::cout << '\n';
         struct sockaddr cli_addr;
         socklen_t clilen;
         
         int newsock = accept(sock, &cli_addr, &clilen);
-        int pid;
         
         if (newsock == -1) {
             perror("accept");
             return 0;
         }
+        pthread_t thread1;
+        int iret1 = pthread_create( &thread1, NULL, handle, (void*) &newsock);
+        if(iret1)
+        {
+            fprintf(stderr,"Error - pthread_create() return code: %d\n",iret1);
+            exit(EXIT_FAILURE);
+        }
         
-        pid = fork();
-        if (pid == 0) {
-            /* In child process */
-            close(sock);
-            *num=*num+1;
-            printf("handle num : %i\n",*num);
-            handle(newsock,num);
-            return 0;
-        }
-        else {
-            /* Parent process */
-            if (pid == -1) {
-                perror("fork");
-                return 1;
-            }
-            else {
-                close(newsock);
-            }
-        }
     }
     
-    close(sock);
+    return 0;
+}
+
+void *handle(void *sock){
+    int newsock = *(int*)sock;
+    char head[4];
+    int n = read(newsock,head,4);
+    char* h=head;
     
+    int32_t l =(((0x00 & 0xff) << 24) | ((head[1] & 0xff) << 16)| ((head[2] & 0xff) << 8) | ((head[3] & 0xff)))-4;
+    //printf("len: %zu\n",l);
+    
+    char body[l];
+    n = read(newsock,body,l);
+    char* b=body;
+    diameter d=diameter(h,b,l);
+    entry e=entry();
+    Callee callee;
+    callee.socket=newsock;
+    //callee.vect=vect;
+    e.connectCallback(&callee);
+    diameter reply=e.process(d);
+    
+    char resp[reply.len+4];
+    char* r=resp;
+    reply.compose(r);
+    
+    n = write(newsock,resp,reply.len+4);
     return 0;
 }

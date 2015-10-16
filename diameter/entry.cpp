@@ -11,8 +11,7 @@
 #include "avputil.h"
 #include "logic.h"
 #include <iostream>
-entry::entry(int sock){
-    entry::sock=sock;
+entry::entry(){
 }
 
 diameter entry::process(diameter d){
@@ -124,5 +123,5 @@ void entry::connectCallback(CallbackInterface *cb)
 void entry::test(std::string host)
 {
     printf("Caller::test() calling callback...\n");
-    entry::m_cb -> cbiCallbackFunction(sock,host);
+    entry::m_cb -> cbiCallbackFunction(host);
 }
