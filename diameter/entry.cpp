@@ -16,7 +16,7 @@ entry::entry(int sock){
 }
 
 diameter entry::process(diameter d){
-    test();
+    
     //entry screening header : command code, appId
     //avp screening/processing to logic.cpp
     
@@ -40,6 +40,8 @@ diameter entry::process(diameter d){
     //lojik.getResult(d, allavp, l,total);
     if (ccode==257) {
         lojik.getCEA(d, allavp, l, total);
+        //if cea success, add sock peer to list
+        test("peerhost");
     }else{
         lojik.getUnable2Comply(d, allavp, l, total);
     }
@@ -99,7 +101,6 @@ diameter entry::process(diameter d){
     b=b-l_resp+4;
 
     diameter answer=diameter(h, b, l_resp-4);
-    answer.host="peerhost";
 
     
     return answer;
@@ -111,10 +112,8 @@ void entry::connectCallback(CallbackInterface *cb)
 }
 
 // Test the callback to make sure it works.
-void entry::test()
+void entry::test(std::string host)
 {
     printf("Caller::test() calling callback...\n");
-    int i = entry::m_cb -> cbiCallbackFunction(sock,10);
-    
-    printf("Result (): %d\n", i);
+    entry::m_cb -> cbiCallbackFunction(sock,host);
 }

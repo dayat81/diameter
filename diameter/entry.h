@@ -14,7 +14,7 @@ class CallbackInterface
 {
 public:
     // The prefix "cbi" is to prevent naming clashes.
-    virtual int cbiCallbackFunction(int,int) = 0;
+    virtual void cbiCallbackFunction(int,std::string) = 0;
 };
 class entry{
 private:
@@ -25,7 +25,7 @@ public:
     int sock;
     diameter process(diameter d);
     void connectCallback(CallbackInterface *cb);
-    void test();
+    void test(std::string host);
 };
 
 #endif /* entry_h */ 

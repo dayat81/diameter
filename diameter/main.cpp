@@ -8,17 +8,20 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <iostream>
+#include <map>
 #include "entry.h"
 
 //this class maintain socket list
 class Callee : public CallbackInterface
 {
 public:
+    std::map<std::string, int> m;
     // The callback function that Caller will call.
-    int cbiCallbackFunction(int sock,int i)
+    void cbiCallbackFunction(int sock,std::string host)
     {
         printf("  Callee::cbiCallbackFunction() inside callback\n");
-        return sock * i;
+        std::cout<<sock<<" "<<host<<std::endl;
+        m[host] = sock;
     }
 };
 void error(const char *msg)
@@ -84,6 +87,15 @@ int main(int argc, char *argv[])
     diameter reply=e.process(d);
     //reply.dump();
     //printf("\n");
+    std::map<std::string, int>::iterator it;
+    
+    for ( it = callee.m.begin(); it != callee.m.end(); it++ )
+    {
+        std::cout << it->first  // string (key)
+        << ':'
+        << it->second   // string's value
+        << std::endl ;
+    }
     std::string str = "hello world" ;
     //reply.mylibfun_add_tail( 1, 4, foo, std::ref(str), '!' ,newsockfd) ;
     std::cout << "str: '" << str << " "<<newsockfd<<"'\n------------------------\n" ;
