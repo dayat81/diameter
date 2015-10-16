@@ -1,15 +1,23 @@
-/* A simple server in the internet domain using TCP
- The port number is passed as an argument */
+/*
+ *  A forked server
+ *  by Martin Broadhurst (www.martinbroadhurst.com)
+ */
+
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/types.h>
+#include <string.h> /* memset() */
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <iostream>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/wait.h>
+#include <netdb.h>
 #include <map>
+#include <iostream>
 #include "entry.h"
+
+#define PORT    "3868" /* Port to listen on */
+#define BACKLOG     10  /* Passed to listen() */
 
 //this class maintain socket list
 class Callee : public CallbackInterface
@@ -20,93 +28,136 @@ public:
     void cbiCallbackFunction(int sock,std::string host)
     {
         printf("  Callee::cbiCallbackFunction() inside callback\n");
-        std::cout<<sock<<" "<<host<<std::endl;
-        m[host] = sock;
+        //std::cout<<sock<<" "<<host<<std::endl;
+        m.insert({host,sock});
     }
 };
-void error(const char *msg)
+Callee callee;
+/* Signal handler to reap zombie processes */
+static void wait_for_child(int sig)
 {
-    perror(msg);
-    exit(1);
+    while (waitpid(-1, NULL, WNOHANG) > 0);
 }
-//void foo( std::string& str, char ch,int sock, int sz,std::string host )
-//{
-//    std::cout << "foo( '" << str << "', '" << ch << "', " << sz << " )\n"<<host<<" "<<sock<<std::endl ;
-//    str += std::string( sz, ch ) ;
-//}
-int main(int argc, char *argv[])
+
+void handle(int newsock)
 {
-    Callee callee;
-    int sockfd, newsockfd, portno;
-    socklen_t clilen;
+    /* recv(), send(), close() */
     char head[4];
-    struct sockaddr_in serv_addr, cli_addr;
-    int n;
-
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0)
-        error("ERROR opening socket");
-    bzero((char *) &serv_addr, sizeof(serv_addr));
-    portno = 3868;
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = INADDR_ANY;
-    serv_addr.sin_port = htons(portno);
-     int reuseaddr = 1; /* True */
-    /* Enable the socket to reuse the address */
-    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &reuseaddr, sizeof(int)) == -1) {
-        perror("setsockopt");
-        return 1;
-    }
-    if (bind(sockfd, (struct sockaddr *) &serv_addr,
-             sizeof(serv_addr)) < 0)
-        error("ERROR on binding");
-    listen(sockfd,5);
-    clilen = sizeof(cli_addr);
-    newsockfd = accept(sockfd,
-                       (struct sockaddr *) &cli_addr,
-                       &clilen);
-    if (newsockfd < 0)
-        error("ERROR on accept");
-    //bzero(buffer,4);
-    n = read(newsockfd,head,4);
-    if (n < 0) error("ERROR reading from socket");
+    int n = read(newsock,head,4);
     char* h=head;
-
-    int32_t l =(((0x00 & 0xff) << 24) | ((head[1] & 0xff) << 16)| ((head[2] & 0xff) << 8) | ((head[3] & 0xff)))-4;
-    //printf("len: %zu\n",l);
-    char body[l];
     
-    //bzero(next, l);
-    n = read(newsockfd,body,l);
-    if (n < 0) error("ERROR reading from socket");
+    int32_t l =(((0x00 & 0xff) << 24) | ((head[1] & 0xff) << 16)| ((head[2] & 0xff) << 8) | ((head[3] & 0xff)))-4;
+    printf("len: %zu\n",l);
+    
+    char body[l];
+    n = read(newsock,body,l);
     char* b=body;
     diameter d=diameter(h,b,l);
     
-    entry e=entry(newsockfd);
+    entry e=entry(newsock);
     e.connectCallback(&callee);
     diameter reply=e.process(d);
-    //reply.dump();
-    //printf("\n");
     std::map<std::string, int>::iterator it;
     
     for ( it = callee.m.begin(); it != callee.m.end(); it++ )
     {
         std::cout << it->first  // string (key)
-        << ':'
+        << ' = '
         << it->second   // string's value
         << std::endl ;
     }
-    std::string str = "hello world" ;
-    //reply.mylibfun_add_tail( 1, 4, foo, std::ref(str), '!' ,newsockfd) ;
-    std::cout << "str: '" << str << " "<<newsockfd<<"'\n------------------------\n" ;
-    
     char resp[reply.len+4];
     char* r=resp;
     reply.compose(r);
     
-    n = write(newsockfd,resp,reply.len+4);
-    if (n < 0) error("ERROR writing to socket");
-    close(newsockfd);
-    close(sockfd);
+    n = write(newsock,resp,reply.len+4);
+}
+
+int main(void)
+{
+    int sock;
+    struct sigaction sa;
+    struct addrinfo hints, *res;
+    int reuseaddr = 1; /* True */
+    
+    /* Get the address info */
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    if (getaddrinfo(NULL, PORT, &hints, &res) != 0) {
+        perror("getaddrinfo");
+        return 1;
+    }
+    
+    /* Create the socket */
+    sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+    if (sock == -1) {
+        perror("socket");
+        return 1;
+    }
+    
+    /* Enable the socket to reuse the address */
+    if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &reuseaddr, sizeof(int)) == -1) {
+        perror("setsockopt");
+        return 1;
+    }
+    
+    /* Bind to the address */
+    if (bind(sock, res->ai_addr, res->ai_addrlen) == -1) {
+        perror("bind");
+        return 1;
+    }
+    
+    /* Listen */
+    if (listen(sock, BACKLOG) == -1) {
+        perror("listen");
+        return 1;
+    }
+    
+    freeaddrinfo(res);
+    
+    /* Set up the signal handler */
+    sa.sa_handler = wait_for_child;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART;
+    if (sigaction(SIGCHLD, &sa, NULL) == -1) {
+        perror("sigaction");
+        return 1;
+    }
+    
+    /* Main loop */
+    while (1) {
+        struct sockaddr cli_addr;
+        socklen_t clilen;
+        
+        int newsock = accept(sock, &cli_addr, &clilen);
+        int pid;
+        
+        if (newsock == -1) {
+            perror("accept");
+            return 0;
+        }
+        
+        pid = fork();
+        if (pid == 0) {
+            /* In child process */
+            close(sock);
+            handle(newsock);
+            return 0;
+        }
+        else {
+            /* Parent process */
+            if (pid == -1) {
+                perror("fork");
+                return 1;
+            }
+            else {
+                close(newsock);
+            }
+        }
+    }
+    
+    close(sock);
+    
     return 0;
 }

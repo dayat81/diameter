@@ -22,7 +22,7 @@ diameter entry::process(diameter d){
     
     d.populateHeader();
     int ccode=((*(d.ccode) & 0xff) << 16)| ((*(d.ccode+1) & 0xff) << 8) | ((*(d.ccode+2)& 0xff));
-    printf("printf ccode : %i\n",ccode);
+    //printf("printf ccode : %i\n",ccode);
     //cek header here 
 
 //    
@@ -41,7 +41,16 @@ diameter entry::process(diameter d){
     if (ccode==257) {
         lojik.getCEA(d, allavp, l, total);
         //if cea success, add sock peer to list
-        test("peerhost");
+        time_t rawtime;
+        struct tm * timeinfo;
+        char buffer[80];
+        
+        time (&rawtime);
+        timeinfo = localtime(&rawtime);
+        
+        strftime(buffer,80,"%d-%m-%Y %I:%M:%S",timeinfo);
+        std::string str(buffer);
+        test(str);
     }else{
         lojik.getUnable2Comply(d, allavp, l, total);
     }
