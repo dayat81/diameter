@@ -105,8 +105,8 @@ void logic::getCCA(diameter d,avp* &allavp,int &l,int &total){
 //    acg++;
 //    acg->dump();
     //acg=acg-2;
-    //avp cr_install=util.encodeAVP(1001, 10415, 0xC0, acg, a.Size());
-    //cr_install.dump();
+    avp cr_install=util.encodeAVP(1001, 10415, 0xC0, acg, a.Size());
+    cr_install.dump();
     //acg=acg-1;
 //    printf("\n");
     char f=0x40;
@@ -128,19 +128,20 @@ void logic::getCCA(diameter d,avp* &allavp,int &l,int &total){
     avp* listavp1[2]={&id_t1,&id_d1};
     avp sid1=util.encodeAVP(443, 0, 0x40, listavp1, 2);
     //printf("\n");
-    //total=sid.len+o.len+sid1.len;//+cr_install.len;
-    l=1;
+    total=sid.len+o.len+sid1.len+cr_install.len;
+    l=4;
     allavp=new avp[l];
-    total=acg->len;
-    allavp[0]=*acg;
+    //total=cr_install.len;
+//    total=acg->len;
+//    allavp[0]=*acg;
 //    acg++;
 //    total=total+acg->len;
 //    allavp[1]=*acg;
     
-//    allavp[0]=o;
-//    allavp[1]=sid;
-//    allavp[2]=sid1;
-    //allavp[3]=cr_install;
+    allavp[0]=o;
+    allavp[1]=sid;
+    allavp[2]=sid1;
+    allavp[3]=cr_install;
 }
 
 
