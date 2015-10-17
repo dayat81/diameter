@@ -34,22 +34,22 @@ diameter entry::process(diameter d){
     avp* allavp=new avp[1];
     int l;
     int total;
-    
+    std::string host="";
     //CALL LOGIC HERE
     //lojik.getResult(d, allavp, l,total);
     if (ccode==257) {
-        lojik.getCEA(d, allavp, l, total);
+        lojik.getCEA(d, allavp, l, total,host);
         //if cea success, add sock peer to list
-        time_t rawtime;
-        struct tm * timeinfo;
-        char buffer[80];
-        
-        time (&rawtime);
-        timeinfo = localtime(&rawtime);
-        
-        strftime(buffer,80,"%d-%m-%Y %I:%M:%S",timeinfo);
-        std::string str(buffer);
-        test(str);
+//        time_t rawtime;
+//        struct tm * timeinfo;
+//        char buffer[80];
+//        
+//        time (&rawtime);
+//        timeinfo = localtime(&rawtime);
+//        
+//        strftime(buffer,80,"%d-%m-%Y %I:%M:%S",timeinfo);
+//        std::string str(buffer);
+        test(host);
     }else{
         lojik.getUnable2Comply(d, allavp, l, total);
     }

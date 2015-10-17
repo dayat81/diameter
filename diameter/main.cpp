@@ -33,10 +33,9 @@ public:
     {
         printf("  Callee::cbiCallbackFunction() inside callback\n");
         std::cout<<host<<","<<socket<<std::endl;
-        std::string value;
-        rocksdb::Slice key = "hello";
-        rocksdb::Status status=db->Get(rocksdb::ReadOptions(), key, &value);
-        std::cout<<value<<std::endl;
+        
+        rocksdb::Status status = db->Put(rocksdb::WriteOptions(), host, std::to_string(socket));
+
     }
 };
 
@@ -53,12 +52,6 @@ int main(void)
     options.create_if_missing = true;
     rocksdb::Status status = rocksdb::DB::Open(options, "/tmp/testdb", &db);
     assert(status.ok());
-    rocksdb::Slice key = "hello";
-    //rocksdb::Slice val = "world";
-    //status = db->Put(rocksdb::WriteOptions(), key, val);
-    std::string value;
-    status=db->Get(rocksdb::ReadOptions(), key, &value);
-    std::cout<<value<<std::endl;
     
     int sock;
     struct sigaction sa;
