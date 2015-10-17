@@ -54,15 +54,14 @@ void logic::getResult(diameter d,avp* &allavp,int &l,int &total){
     allavp[2]=sid1;
 }
 
-void logic::getCEA(diameter d,avp* &allavp,int &l,int &total,std::string &host){
+void logic::getCCA(diameter d,avp* &allavp,int &l,int &total){
     avputil util=avputil();
     
     //read avp
     avp ori_host=d.getAVP(264, 0);
     printf("ori len %i \n",ori_host.len);
     if(ori_host.len>0){
-        //std::cout<<util.decodeAsString(ori_host)<<std::endl;
-        host=util.decodeAsString(ori_host);
+        std::cout<<util.decodeAsString(ori_host)<<std::endl;
     }
     
     char f=0x40;
@@ -92,6 +91,30 @@ void logic::getCEA(diameter d,avp* &allavp,int &l,int &total,std::string &host){
     allavp[0]=o;
     allavp[1]=sid;
     allavp[2]=sid1;
+}
+
+void logic::getCEA(diameter d,avp* &allavp,int &l,int &total,std::string &host){
+    avputil util=avputil();
+    
+    //read avp
+    avp ori_host=d.getAVP(264, 0);
+    printf("ori len %i \n",ori_host.len);
+    if(ori_host.len>0){
+        //std::cout<<util.decodeAsString(ori_host)<<std::endl;
+        host=util.decodeAsString(ori_host);
+    }
+    
+    char f=0x40;
+    std::string ori ="vmclient.myrealm.example";
+    //printf("size : %i\n",ori.size());
+    avp o=util.encodeString(264,0,f,ori);
+    
+    //sid.dump();
+    //printf("\n");
+    total=o.len;
+    l=1;
+    allavp=new avp[l];
+    allavp[0]=o;
 }
 
 void logic::getUnable2Comply(diameter d,avp* &allavp,int &l,int &total){

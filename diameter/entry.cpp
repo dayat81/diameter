@@ -40,16 +40,11 @@ diameter entry::process(diameter d){
     if (ccode==257) {
         lojik.getCEA(d, allavp, l, total,host);
         //if cea success, add sock peer to list
-//        time_t rawtime;
-//        struct tm * timeinfo;
-//        char buffer[80];
-//        
-//        time (&rawtime);
-//        timeinfo = localtime(&rawtime);
-//        
-//        strftime(buffer,80,"%d-%m-%Y %I:%M:%S",timeinfo);
-//        std::string str(buffer);
         test(host);
+    }else if(ccode==272){//ccr
+        lojik.getResult(d, allavp, l,total);
+    }else if(ccode==280){//watchdog
+        
     }else{
         lojik.getUnable2Comply(d, allavp, l, total);
     }

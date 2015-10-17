@@ -225,27 +225,40 @@ void *handlecommand(void *sock){
 void *handle(void *sock){
     int newsock = *(int*)sock;
     char head[4];
-    int n = read(newsock,head,4);
-    char* h=head;
-    
-    int32_t l =(((0x00 & 0xff) << 24) | ((head[1] & 0xff) << 16)| ((head[2] & 0xff) << 8) | ((head[3] & 0xff)))-4;
-    //printf("len: %zu\n",l);
-    
-    char body[l];
-    n = read(newsock,body,l);
-    char* b=body;
-    diameter d=diameter(h,b,l);
-    entry e=entry();
-    Callee callee;
-    callee.socket=newsock;
-    callee.db=db;
-    e.connectCallback(&callee);
-    diameter reply=e.process(d);
-    
-    char resp[reply.len+4];
-    char* r=resp;
-    reply.compose(r);
-    
-    n = write(newsock,resp,reply.len+4);
+    int n;
+    while((n=read(newsock,head,4))>0){
+        char* h=head;
+        
+        int32_t l =(((0x00 & 0xff) << 24) | ((head[1] & 0xff) << 16)| ((head[2] & 0xff) << 8) | ((head[3] & 0xff)))-4;
+        //printf("len: %zu\n",l);
+        
+        char body[l];
+        n = read(newsock,body,l);
+        char* b=body;
+        diameter d=diameter(h,b,l);
+        entry e=entry();
+        Callee callee;
+        callee.socket=newsock;
+        callee.db=db;
+        e.connectCallback(&callee);
+        diameter reply=e.process(d);
+        
+        char resp[reply.len+4];
+        char* r=resp;
+        reply.compose(r);
+        
+        int w = write(newsock,resp,reply.len+4);
+        if(w<=0){
+            //fail write
+        }
+    }
+  if(n == 0)
+  {
+      //socket was gracefully closed
+  }
+  else if(n < 0)
+  {
+      //socket error occurred
+  }
     return 0;
 }
