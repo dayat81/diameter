@@ -16,11 +16,14 @@
 #include <vector>
 #include <pthread.h>
 #include <assert.h>
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
 #include "entry.h"
 
 #define PORT    "3868" /* Port to listen on */
 #define BACKLOG     10  /* Passed to listen() */
-
+using namespace rapidjson;
 //this class maintain socket list
 class Callee : public CallbackInterface
 {
@@ -37,7 +40,7 @@ public:
 
     }
 };
-
+void remove_escape(char *string);
 void *handle(void *);
 void *handlecmd(void *);
 void *handlecommand(void *);
@@ -197,7 +200,7 @@ void *handlecommand(void *sock){
             chars_array = strtok(NULL, "#:");
         }
         //printf("%s\n",cClientMessage);
-        if( memcmp( params[0], "peer", strlen( "peer") ) == 0 &&memcmp( params[1], "all", strlen( "all") ) == 0 ) {
+        if( memcmp( params[0], "show", strlen( "show") ) == 0 &&memcmp( params[1], "all", strlen( "all") ) == 0 ) {
             //printf("dump peer here\n");
             rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions());
             for (it->SeekToFirst(); it->Valid(); it->Next()) {
@@ -207,6 +210,38 @@ void *handlecommand(void *sock){
         }else if (memcmp( params[0], "send", strlen( "send") ) == 0){
             printf("send to socket %s msg %s \n",params[1],params[2]);
             int n = write(atoi(params[1]),params[2],10);
+        }else if( memcmp( params[0], "show", strlen( "show") ) == 0 &&memcmp( params[1], "msid", strlen( "msid") ) == 0 ) {
+            char* msid=params[2];
+            remove_escape(msid);
+            printf("show msid %s\n",msid);
+            std::string val;
+            rocksdb::Status status = db->Get(rocksdb::ReadOptions(),msid, &val);
+            std::cout<<val<<std::endl;
+            
+        }else if( memcmp( params[0], "delacg", strlen( "delacg") ) == 0) {
+            char* msid=params[2];
+            remove_escape(msid);
+            printf("show msid %s\n",msid);
+            std::string val;
+            rocksdb::Status status = db->Get(rocksdb::ReadOptions(),msid, &val);
+            std::cout<<val<<std::endl;
+            Document dom;
+            //Document::AllocatorType& allocator = dom.GetAllocator();
+            dom.Parse(val.c_str());
+            Value& a = dom["acg"];
+            assert(a.IsArray());
+            a.RemoveMember(params[1]);
+//            for (SizeType i = 0; i < a.Size(); i++){
+//                const char* acg=a[i].GetString();
+//                printf("a[%d] = %s\n", i, acg);
+//                if(strcmp(acg, params[1]) == 0){
+//                    printf("delete %s\n",params[1]);
+//                    a.RemoveMember(acg);
+//                }
+//            }
+            for (SizeType i = 0; i < a.Size(); i++){
+                printf("a[%d] = %s\n", i, a[i].GetString());
+            }
         }
     }
     
@@ -220,7 +255,20 @@ void *handlecommand(void *sock){
     }
     return 0;
 }
-
+void remove_escape(char *string)
+{
+    char *read, *write;
+    
+    for(read = write = string; *read != '\0'; ++read)
+    {
+        /* edit: or if(!isspace(*read)), see swoopy's suggestion below */
+        if(*read != '\r' && *read!='\n')
+        {
+            *(write++) = *read;
+        }
+    }
+    *write = '\0';
+}
 void *handle(void *sock){
     int newsock = *(int*)sock;
     char head[4];
