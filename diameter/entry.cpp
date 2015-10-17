@@ -51,7 +51,21 @@ void getUnable2Comply(diameter d,avp* &allavp,int &l,int &total){
     allavp[1]=sid;
     allavp[2]=sid1;
 }
-
+void getRAR(avp* &allavp,int &l,int &total){
+    avputil util=avputil();
+    
+    char f=0x40;
+    std::string ori ="vmclient.myrealm.example";
+    //printf("size : %i\n",ori.size());
+    avp o=util.encodeString(264,0,f,ori);
+    
+    //sid.dump();
+    //printf("\n");
+    total=o.len;
+    l=1;
+    allavp=new avp[l];
+    allavp[0]=o;
+}
 void getCEA(diameter d,avp* &allavp,int &l,int &total,std::string &host){
     avputil util=avputil();
     
@@ -75,7 +89,60 @@ void getCEA(diameter d,avp* &allavp,int &l,int &total,std::string &host){
     allavp=new avp[l];
     allavp[0]=o;
 }
-
+diameter entry::createRAR(){
+    printf("create RAR\n");
+    char* h=new char[4];
+    *h=0x01;
+    avp* allavp=new avp[1];
+    int l,total;
+    getRAR(allavp, l, total);
+    int l_resp=20+total;
+    char *ptr1 = (char*)&l_resp;
+    char l_byte[3];
+    char* lp=l_byte;
+    ptr1=ptr1+2;
+    int i=0;
+    while(i<3){
+        *lp=*ptr1;
+        lp++;
+        ptr1--;
+        i++;
+    }
+    //printf(" lbyte %02X %02X %02X ",l_byte[0],l_byte[1],l_byte[2]);
+    *(h+1)=l_byte[0];
+    *(h+2)=l_byte[1];
+    *(h+3)=l_byte[2];
+    char *b=new char[l_resp-4];
+    
+    *b=0x80;
+    //printf(" ccode %02X %02X %02X ",*d.ccode,*(d.ccode+1),*(d.ccode+2));
+    *(b+1)=0x00;
+    *(b+2)=0x01;
+    *(b+3)=0x02;
+    //printf(" copy ccode %02X %02X %02X \n",body[1],body[2],body[3]);
+    //copy appid hbh e2e to body
+    i=0;
+    while (i<12) {
+        *(b+i+4)=0x00;
+        i++;
+    }
+    b=b+16;
+    for (i=0; i<l; i++) {
+        //copy avp
+        char *temp=allavp[i].val;
+        //allavp[i].dump();
+        //printf("\n");
+        for (int j=0; j<allavp[i].len; j++) {
+            *b=*temp;
+            b++;
+            temp++;
+        }
+    }
+    b=b-l_resp+4;
+    diameter answer=diameter(h,b,l_resp-4);
+    answer.dump();
+    return answer;
+}
 diameter entry::process(diameter d){
     d.populateHeader();
     int reqbit=(0x80&d.cflags);

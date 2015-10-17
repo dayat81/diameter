@@ -207,9 +207,27 @@ void *handlecommand(void *sock){
                 std::cout << it->key().ToString() << ": " << it->value().ToString() << std::endl;
             }
             assert(it->status().ok());
+        }else if(memcmp( params[0], "test", strlen( "test") ) == 0){
+            
+            int w = write(atoi(params[1]),"oi",2);
+            if(w<=0){
+                //fail write
+            }
+            
         }else if (memcmp( params[0], "send", strlen( "send") ) == 0){
-            printf("send to socket %s msg %s \n",params[1],params[2]);
-            int n = write(atoi(params[1]),params[2],10);
+            printf("send to socket %s msg rar \n",params[1]);
+            //getrar here
+            entry e=entry();
+            diameter reply=e.createRAR();
+            reply.dump();
+            char resp[reply.len+4];
+            char* r=resp;
+            reply.compose(r);
+            
+            int w = write(atoi(params[1]),resp,reply.len+4);
+            if(w<=0){
+                //fail write
+            }
         }else if( memcmp( params[0], "show", strlen( "show") ) == 0 &&memcmp( params[1], "msid", strlen( "msid") ) == 0 ) {
             char* msid=params[2];
             remove_escape(msid);
