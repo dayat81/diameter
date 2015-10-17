@@ -58,6 +58,7 @@ void getRAR(avp* &allavp,int &l,int &total){
     std::string ori ="vmclient.myrealm.example";
     //printf("size : %i\n",ori.size());
     avp o=util.encodeString(264,0,f,ori);
+    //read rar_info
     
     //sid.dump();
     //printf("\n");
@@ -140,7 +141,7 @@ diameter entry::createRAR(){
     }
     b=b-l_resp+4;
     diameter answer=diameter(h,b,l_resp-4);
-    answer.dump();
+    //answer.dump();
     return answer;
 }
 diameter entry::process(diameter d){
@@ -227,7 +228,7 @@ diameter entry::process(diameter d){
     b=b-l_resp+4;
 
     diameter answer=diameter(h, b, l_resp-4);
-
+    //answer.dump();
     
     return answer;
 }

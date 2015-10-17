@@ -95,8 +95,10 @@ void logic::getCCA(diameter d,avp* &allavp,int &l,int &total){
             }
         }
         std::cout<<msidstring<<std::endl;
+        std::string msidrarinfo=msidstring;
         //store sessid,msid
         rocksdb::Status status = db->Put(rocksdb::WriteOptions(), sessidval, msidstring);
+        status = db->Put(rocksdb::WriteOptions(), msidrarinfo.append("_sess"), sessidval);
         std::string val;
         status = db->Get(rocksdb::ReadOptions(), msidstring, &val);
         std::cout<<val<<std::endl;
@@ -108,12 +110,12 @@ void logic::getCCA(diameter d,avp* &allavp,int &l,int &total){
         for (SizeType i = 0; i < a.Size(); i++){ // Uses SizeType instead of size_t
             //printf("a[%d] = %s\n", i, a[i].GetString());   //map to charging-rule-name-avp
             avp temp=util.encodeString(1005, 10415, 0xC0, a[i].GetString());
-            //temp.dump();
+            temp.dump();
             //printf("\n");
             *acg=temp;
             acg++;
         }
-        acg=acg-2;
+        acg=acg-a.Size();
         avp cr_install=util.encodeAVP(1001, 10415, 0xC0, acg, a.Size());
         char f=0x40;
         std::string ori ="vmclient.myrealm.example";

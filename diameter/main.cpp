@@ -34,7 +34,7 @@ public:
     void cbiCallbackFunction(std::string host)
     {
         printf("  Callee::cbiCallbackFunction() inside callback\n");
-        std::cout<<host<<","<<socket<<std::endl;
+        //std::cout<<host<<","<<socket<<std::endl;
         
         rocksdb::Status status = db->Put(rocksdb::WriteOptions(), host, std::to_string(socket));
 
@@ -207,19 +207,16 @@ void *handlecommand(void *sock){
                 std::cout << it->key().ToString() << ": " << it->value().ToString() << std::endl;
             }
             assert(it->status().ok());
-        }else if(memcmp( params[0], "test", strlen( "test") ) == 0){
-            
-            int w = write(atoi(params[1]),"oi",2);
-            if(w<=0){
-                //fail write
-            }
+        }else if(memcmp( params[0], "rar", strlen( "rar") ) == 0){
+            printf("send rar to msid %s \n",params[1]);
+            //search sessionid of it
             
         }else if (memcmp( params[0], "send", strlen( "send") ) == 0){
             printf("send to socket %s msg rar \n",params[1]);
             //getrar here
             entry e=entry();
             diameter reply=e.createRAR();
-            reply.dump();
+            //reply.dump();
             char resp[reply.len+4];
             char* r=resp;
             reply.compose(r);
@@ -240,7 +237,7 @@ void *handlecommand(void *sock){
             char* msid=params[2];
             remove_escape(msid);
             printf("show msid %s\n",msid);
-            std::string val;
+            std::string val,val1;
             rocksdb::Status status = db->Get(rocksdb::ReadOptions(),msid, &val);
             std::cout<<val<<std::endl;
             char json[val.size()+1];//as 1 char space for null is also required
@@ -259,6 +256,32 @@ void *handlecommand(void *sock){
                 if(strcmp(acg, params[1]) == 0){
                     printf("delete %s\n",params[1]);
                     a.Erase(itr);
+                    //write rarinfo
+                    //write rarinfo
+                    char* info="_rarinfo";
+                    char rarinfo[strlen(msid)+strlen(info)];
+                    strcpy(rarinfo,msid); // copy string one into the result.
+                    strcat(rarinfo,info); // append string two to the result.
+                    //printf("rarinfo %s\n",rarinfo);
+                    status = db->Get(rocksdb::ReadOptions(),rarinfo, &val1);
+                    std::cout<<val1<<std::endl;
+                    char json1[val1.size()+1];//as 1 char space for null is also required
+                    strcpy(json1, val1.c_str());
+                    Document dom1;
+                    //printf("Original json:\n%s\n", json);
+                    char buffer1[sizeof(json1)];
+                    memcpy(buffer1, json1, sizeof(json1));
+                    if (dom1.ParseInsitu<0>(buffer1).HasParseError())
+                        printf("error parsing\n");
+                    Value& a1 = dom1["delacg"];
+                    assert(a1.IsArray());
+                    Document::AllocatorType& allocator1 = dom1.GetAllocator();
+                    Value newacg1;
+                    a1.PushBack(newacg1.SetString(params[1], strlen(params[1])), allocator1);
+                    StringBuffer strbuf1;
+                    Writer<StringBuffer> writer1(strbuf1);
+                    dom1.Accept(writer1);
+                    status = db->Put(rocksdb::WriteOptions(),rarinfo, strbuf1.GetString());
                     break;
                 }
             }
@@ -275,10 +298,11 @@ void *handlecommand(void *sock){
         }else if( memcmp( params[0], "addacg", strlen( "addacg") ) == 0) {
             char* msid=params[2];
             remove_escape(msid);
+            
             printf("show msid %s\n",msid);
-            std::string val;
+            std::string val,val1;
             rocksdb::Status status = db->Get(rocksdb::ReadOptions(),msid, &val);
-            std::cout<<val<<std::endl;
+            //std::cout<<val<<std::endl;
             char json[val.size()+1];//as 1 char space for null is also required
             strcpy(json, val.c_str());
             Document dom;
@@ -292,8 +316,33 @@ void *handlecommand(void *sock){
             Document::AllocatorType& allocator = dom.GetAllocator();
             Value newacg;
             a.PushBack(newacg.SetString(params[1], strlen(params[1])), allocator);
-            printf("Updated json:\n");
+            //write rarinfo
+            char* info="_rarinfo";
+            char rarinfo[strlen(msid)+strlen(info)];
+            strcpy(rarinfo,msid); // copy string one into the result.
+            strcat(rarinfo,info); // append string two to the result.
+            //printf("rarinfo %s\n",rarinfo);
+            status = db->Get(rocksdb::ReadOptions(),rarinfo, &val1);
+            std::cout<<val1<<std::endl;
+            char json1[val1.size()+1];//as 1 char space for null is also required
+            strcpy(json1, val1.c_str());
+            Document dom1;
+            //printf("Original json:\n%s\n", json);
+            char buffer1[sizeof(json1)];
+            memcpy(buffer1, json1, sizeof(json1));
+            if (dom1.ParseInsitu<0>(buffer1).HasParseError())
+                printf("error parsing\n");
+            Value& a1 = dom1["addacg"];
+            assert(a1.IsArray());
+            Document::AllocatorType& allocator1 = dom1.GetAllocator();
+            Value newacg1;
+            a1.PushBack(newacg1.SetString(params[1], strlen(params[1])), allocator1);
+            StringBuffer strbuf1;
+            Writer<StringBuffer> writer1(strbuf1);
+            dom1.Accept(writer1);
+            status = db->Put(rocksdb::WriteOptions(),rarinfo, strbuf1.GetString());
             
+            printf("Updated json:\n");
             // Convert JSON document to string
             StringBuffer strbuf;
             Writer<StringBuffer> writer(strbuf);

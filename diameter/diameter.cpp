@@ -35,6 +35,7 @@ void diameter::compose(char* r){
 }
 
 void diameter::dump(){
+    //printf("diameter dump %i \n",len);
     int i=0;
     while (i<4) {
         printf("%02X",*h&0xff);
