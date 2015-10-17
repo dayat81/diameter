@@ -39,12 +39,9 @@ public:
     }
 };
 
-/* Signal handler to reap zombie processes */
-static void wait_for_child(int sig)
-{
-    while (waitpid(-1, NULL, WNOHANG) > 0);
-}
 void *handle(void *);
+void *handlecmd(void *);
+void *handlecommand(void *);
 rocksdb::DB* db;
 rocksdb::Options options;
 int main(void)
@@ -53,9 +50,9 @@ int main(void)
     rocksdb::Status status = rocksdb::DB::Open(options, "/tmp/testdb", &db);
     assert(status.ok());
     
-    int sock;
-    struct sigaction sa;
-    struct addrinfo hints, *res;
+    int sock,sock1;
+    
+    struct addrinfo hints, *res,hints1,*res1;
     int reuseaddr = 1; /* True */
     
     /* Get the address info */
@@ -63,6 +60,15 @@ int main(void)
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     if (getaddrinfo(NULL, PORT, &hints, &res) != 0) {
+        perror("getaddrinfo");
+        return 1;
+    }
+
+    /* Get the address provisioning socket info */
+    memset(&hints1, 0, sizeof hints1);
+    hints1.ai_family = AF_INET;
+    hints1.ai_socktype = SOCK_STREAM;
+    if (getaddrinfo(NULL, "1234", &hints1, &res1) != 0) {
         perror("getaddrinfo");
         return 1;
     }
@@ -74,8 +80,21 @@ int main(void)
         return 1;
     }
     
+    /* Create the socket for provisioning*/
+    sock1 = socket(res1->ai_family, res1->ai_socktype, res1->ai_protocol);
+    if (sock1 == -1) {
+        perror("socket");
+        return 1;
+    }
+    
     /* Enable the socket to reuse the address */
     if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &reuseaddr, sizeof(int)) == -1) {
+        perror("setsockopt");
+        return 1;
+    }
+    
+    /* Enable the socket to reuse the address */
+    if (setsockopt(sock1, SOL_SOCKET, SO_REUSEADDR, &reuseaddr, sizeof(int)) == -1) {
         perror("setsockopt");
         return 1;
     }
@@ -86,22 +105,34 @@ int main(void)
         return 1;
     }
     
+    /* Bind to the address */
+    if (bind(sock1, res1->ai_addr, res1->ai_addrlen) == -1) {
+        perror("bind1");
+        return 1;
+    }
+    
     /* Listen */
     if (listen(sock, BACKLOG) == -1) {
         perror("listen");
         return 1;
     }
-    
-    freeaddrinfo(res);
-    
-    /* Set up the signal handler */
-    sa.sa_handler = wait_for_child;
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = SA_RESTART;
-    if (sigaction(SIGCHLD, &sa, NULL) == -1) {
-        perror("sigaction");
+
+    /* Listen */
+    if (listen(sock1, BACKLOG) == -1) {
+        perror("listen1");
         return 1;
     }
+    
+    freeaddrinfo(res);
+    freeaddrinfo(res1);
+    pthread_t thread;
+    int iret = pthread_create( &thread, NULL, handlecmd, (void*) &sock1);
+    if(iret)
+    {
+        fprintf(stderr,"Error - pthread_create() return code: %d\n",iret);
+        exit(EXIT_FAILURE);
+    }
+
     /* Main loop */
     while (1) {
         struct sockaddr cli_addr;
@@ -123,6 +154,71 @@ int main(void)
         
     }
     
+    return 0;
+}
+
+void *handlecmd(void *socket){
+    while(1){
+        struct sockaddr cli_addr;
+        socklen_t clilen;
+        int sock = *(int*)socket;
+        int newsock = accept(sock, &cli_addr, &clilen);
+        if (newsock == -1) {
+            perror("accept");
+            return 0;
+        }
+        printf("cmd connected\n");
+        pthread_t thread1;
+        int iret1 = pthread_create( &thread1, NULL, handlecommand, (void*) &newsock);
+        if(iret1)
+        {
+            fprintf(stderr,"Error - pthread_create() return code: %d\n",iret1);
+            exit(EXIT_FAILURE);
+        }
+    }
+    return 0;
+}
+
+void *handlecommand(void *sock){
+    int newsock = *(int*)sock;
+    int bytes;
+    char cClientMessage[599];
+    
+    while((bytes = recv(newsock, cClientMessage, sizeof(cClientMessage), 0)) > 0)
+    {
+        char* chars_array = strtok(cClientMessage, "#:");
+        int i=0;
+        char* params[3];
+        while(chars_array)
+        {
+            //        MessageBox(NULL, subchar_array, NULL, NULL);
+            std::cout << chars_array << '\n';
+            params[i]=chars_array;
+            i++;
+            chars_array = strtok(NULL, "#:");
+        }
+        //printf("%s\n",cClientMessage);
+        if( memcmp( params[0], "peer", strlen( "peer") ) == 0 &&memcmp( params[1], "all", strlen( "all") ) == 0 ) {
+            //printf("dump peer here\n");
+            rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions());
+            for (it->SeekToFirst(); it->Valid(); it->Next()) {
+                std::cout << it->key().ToString() << ": " << it->value().ToString() << std::endl;
+            }
+            assert(it->status().ok());
+        }else if (memcmp( params[0], "send", strlen( "send") ) == 0){
+            printf("send to socket %s msg %s \n",params[1],params[2]);
+            int n = write(atoi(params[1]),params[2],10);
+        }
+    }
+    
+    if(bytes == 0)
+    {
+        //socket was gracefully closed
+    }
+    else if(bytes < 0)
+    {
+        //socket error occurred
+    }
     return 0;
 }
 
