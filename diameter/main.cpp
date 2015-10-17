@@ -225,23 +225,65 @@ void *handlecommand(void *sock){
             std::string val;
             rocksdb::Status status = db->Get(rocksdb::ReadOptions(),msid, &val);
             std::cout<<val<<std::endl;
+            char json[val.size()+1];//as 1 char space for null is also required
+            strcpy(json, val.c_str());
             Document dom;
-            //Document::AllocatorType& allocator = dom.GetAllocator();
-            dom.Parse(val.c_str());
+            printf("Original json:\n%s\n", json);
+            char buffer[sizeof(json)];
+            memcpy(buffer, json, sizeof(json));
+            if (dom.ParseInsitu<0>(buffer).HasParseError())
+                printf("error parsing\n");
             Value& a = dom["acg"];
             assert(a.IsArray());
-            a.RemoveMember(params[1]);
-//            for (SizeType i = 0; i < a.Size(); i++){
-//                const char* acg=a[i].GetString();
-//                printf("a[%d] = %s\n", i, acg);
-//                if(strcmp(acg, params[1]) == 0){
-//                    printf("delete %s\n",params[1]);
-//                    a.RemoveMember(acg);
-//                }
-//            }
-            for (SizeType i = 0; i < a.Size(); i++){
-                printf("a[%d] = %s\n", i, a[i].GetString());
+            for (Value::ConstValueIterator itr = a.Begin(); itr != a.End(); ++itr){
+                const char* acg=itr->GetString();
+                printf("acg %s\n",acg);
+                if(strcmp(acg, params[1]) == 0){
+                    printf("delete %s\n",params[1]);
+                    a.Erase(itr);
+                    break;
+                }
             }
+            printf("Updated json:\n");
+            
+            // Convert JSON document to string
+            StringBuffer strbuf;
+            Writer<StringBuffer> writer(strbuf);
+            dom.Accept(writer);
+            // string str = buffer.GetString();
+            printf("--\n%s\n--\n", strbuf.GetString());
+            status = db->Put(rocksdb::WriteOptions(),msid, strbuf.GetString());
+
+        }else if( memcmp( params[0], "addacg", strlen( "addacg") ) == 0) {
+            char* msid=params[2];
+            remove_escape(msid);
+            printf("show msid %s\n",msid);
+            std::string val;
+            rocksdb::Status status = db->Get(rocksdb::ReadOptions(),msid, &val);
+            std::cout<<val<<std::endl;
+            char json[val.size()+1];//as 1 char space for null is also required
+            strcpy(json, val.c_str());
+            Document dom;
+            printf("Original json:\n%s\n", json);
+            char buffer[sizeof(json)];
+            memcpy(buffer, json, sizeof(json));
+            if (dom.ParseInsitu<0>(buffer).HasParseError())
+                printf("error parsing\n");
+            Value& a = dom["acg"];
+            assert(a.IsArray());
+            Document::AllocatorType& allocator = dom.GetAllocator();
+            Value newacg;
+            a.PushBack(newacg.SetString(params[1], strlen(params[1])), allocator);
+            printf("Updated json:\n");
+            
+            // Convert JSON document to string
+            StringBuffer strbuf;
+            Writer<StringBuffer> writer(strbuf);
+            dom.Accept(writer);
+            // string str = buffer.GetString();
+            printf("--\n%s\n--\n", strbuf.GetString());
+            status = db->Put(rocksdb::WriteOptions(),msid, strbuf.GetString());
+            
         }
     }
     
