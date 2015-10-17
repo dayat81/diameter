@@ -9,9 +9,11 @@
 #ifndef logic_h
 #define logic_h
 #include "diameter.h"
+#include "rocksdb/db.h"
 
 class logic{
 public:
+    rocksdb::DB* db;
     logic();
     void getResult(diameter d,avp* &allavp,int &l,int &total);
     void getCEA(diameter d,avp* &allavp,int &l,int &total,std::string &host);

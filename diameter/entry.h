@@ -9,6 +9,7 @@
 #ifndef entry_h
 #define entry_h
 
+#include "rocksdb/db.h"
 #include "diameter.h"
 class CallbackInterface
 {
@@ -21,6 +22,7 @@ private:
     // The callback provided by the client via connectCallback().
     CallbackInterface *m_cb;
 public:
+    rocksdb::DB* db;
     entry();
     diameter process(diameter d);
     void connectCallback(CallbackInterface *cb);

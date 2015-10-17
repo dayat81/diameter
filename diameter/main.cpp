@@ -16,7 +16,6 @@
 #include <vector>
 #include <pthread.h>
 #include <assert.h>
-#include "rocksdb/db.h"
 #include "entry.h"
 
 #define PORT    "3868" /* Port to listen on */
@@ -241,6 +240,7 @@ void *handle(void *sock){
         callee.socket=newsock;
         callee.db=db;
         e.connectCallback(&callee);
+        e.db=db;
         diameter reply=e.process(d);
         
         char resp[reply.len+4];

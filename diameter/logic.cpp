@@ -10,7 +10,11 @@
 #include <iostream>
 #include "logic.h"
 #include "avputil.h"
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
 
+using namespace rapidjson;
 logic::logic(){
     //
 }
@@ -80,6 +84,15 @@ void logic::getCCA(diameter d,avp* &allavp,int &l,int &total){
         }
     }
     std::cout<<msidstring<<std::endl;
+    std::string val;
+    rocksdb::Status status = db->Get(rocksdb::ReadOptions(), "1234567890", &val);
+    std::cout<<val<<std::endl;
+    Document dom;
+    dom.Parse(val.c_str());
+    const Value& a = dom["acg"];
+    assert(a.IsArray());
+    for (SizeType i = 0; i < a.Size(); i++) // Uses SizeType instead of size_t
+        printf("a[%d] = %d\n", i, a[i].GetInt());
     char f=0x40;
     std::string ori ="vmclient.myrealm.example";
     //printf("size : %i\n",ori.size());

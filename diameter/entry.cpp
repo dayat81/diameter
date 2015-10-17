@@ -31,6 +31,7 @@ diameter entry::process(diameter d){
 //    
 //    avp* allavp[2]={&o,&sid};
     logic lojik=logic();
+    lojik.db=db;
     avp* allavp=new avp[1];
     int l;
     int total;
