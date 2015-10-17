@@ -47,7 +47,7 @@ rocksdb::Options options;
 int main(void)
 {
     options.create_if_missing = true;
-    rocksdb::Status status = rocksdb::DB::Open(options, "/tmp/testdb", &db);
+    rocksdb::Status status = rocksdb::DB::Open(options, "/Users/dayat81/dbfile/testdb", &db);
     assert(status.ok());
     
     int sock,sock1;

@@ -42,7 +42,7 @@ diameter entry::process(diameter d){
         //if cea success, add sock peer to list
         test(host);
     }else if(ccode==272){//ccr
-        lojik.getResult(d, allavp, l,total);
+        lojik.getCCA(d, allavp, l,total);
     }else if(ccode==280){//watchdog
         
     }else{
