@@ -13,23 +13,78 @@
 #include <iostream>
 entry::entry(){
 }
+void getUnable2Comply(diameter d,avp* &allavp,int &l,int &total){
+    avputil util=avputil();
+    
+    //read avp
+    avp ori_host=d.getAVP(264, 0);
+    printf("ori len %i \n",ori_host.len);
+    if(ori_host.len>0){
+        std::cout<<util.decodeAsString(ori_host)<<std::endl;
+    }
+    
+    char f=0x40;
+    std::string ori ="vmclient.myrealm.example";
+    //printf("size : %i\n",ori.size());
+    avp o=util.encodeString(264,0,f,ori);
+    //o.dump();
+    //printf("\n");
+    avp id_t=util.encodeInt32(450, 0, 0x40, 1);
+    //id_t.dump();
+    //printf("\n");
+    avp id_d=util.encodeString(444, 0, 0x40, "628119105569");
+    //id_d.dump();
+    avp* listavp[2]={&id_t,&id_d};
+    avp sid=util.encodeAVP(443, 0, 0x40, listavp, 2);
+    
+    avp id_t1=util.encodeInt32(450, 0, 0x40, 0);
+    avp id_d1=util.encodeString(444, 0, 0x40, "51010628119105569");
+    avp* listavp1[2]={&id_t1,&id_d1};
+    avp sid1=util.encodeAVP(443, 0, 0x40, listavp1, 2);
+    
+    //sid.dump();
+    //printf("\n");
+    total=sid.len+o.len+sid1.len;
+    l=3;
+    allavp=new avp[l];
+    allavp[0]=o;
+    allavp[1]=sid;
+    allavp[2]=sid1;
+}
+
+void getCEA(diameter d,avp* &allavp,int &l,int &total,std::string &host){
+    avputil util=avputil();
+    
+    //read avp
+    avp ori_host=d.getAVP(264, 0);
+    printf("ori len %i \n",ori_host.len);
+    if(ori_host.len>0){
+        //std::cout<<util.decodeAsString(ori_host)<<std::endl;
+        host=util.decodeAsString(ori_host);
+    }
+    
+    char f=0x40;
+    std::string ori ="vmclient.myrealm.example";
+    //printf("size : %i\n",ori.size());
+    avp o=util.encodeString(264,0,f,ori);
+    
+    //sid.dump();
+    //printf("\n");
+    total=o.len;
+    l=1;
+    allavp=new avp[l];
+    allavp[0]=o;
+}
 
 diameter entry::process(diameter d){
-    
-    //entry screening header : command code, appId
-    //avp screening/processing to logic.cpp
-    
     d.populateHeader();
+    int reqbit=(0x80&d.cflags);
+    if(reqbit==0){
+        return diameter(0, 0, 0);
+    }
+    printf("reqbit : %i\n",reqbit);
     int ccode=((*(d.ccode) & 0xff) << 16)| ((*(d.ccode+1) & 0xff) << 8) | ((*(d.ccode+2)& 0xff));
-    //printf("printf ccode : %i\n",ccode);
-    //cek header here 
-
-//    
    int i=0;
-//
-//    avp sid=util.encodeAVP(443, 0, 0x40, listavp, 2);
-//    
-//    avp* allavp[2]={&o,&sid};
     logic lojik=logic();
     lojik.db=db;
     avp* allavp=new avp[1];
@@ -39,7 +94,7 @@ diameter entry::process(diameter d){
     //CALL LOGIC HERE
     //lojik.getResult(d, allavp, l,total);
     if (ccode==257) {
-        lojik.getCEA(d, allavp, l, total,host);
+        getCEA(d, allavp, l, total,host);
         //if cea success, add sock peer to list
         test(host);
     }else if(ccode==272){//ccr
@@ -47,7 +102,7 @@ diameter entry::process(diameter d){
     }else if(ccode==280){//watchdog
         
     }else{
-        lojik.getUnable2Comply(d, allavp, l, total);
+        getUnable2Comply(d, allavp, l, total);
     }
 
     char* h=new char[4];

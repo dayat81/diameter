@@ -98,12 +98,16 @@ char* return_buffer(const std::string& string)
 }
 
 avp avputil::encodeString(int acode, int vcode, char flags, std::string value){
+    int padding=value.length()%4;
+    if(padding!=0){
+        padding=4-padding;
+    }
     int l=value.length()+8;
     if(vcode!=0){
-        l=l+8;
+        l=l+4;
     }
     //char res[l];
-    char* resp=new char[l];//res;
+    char* resp=new char[l+padding];//res;
     char* buffer = return_buffer(value);
     
     
@@ -133,6 +137,20 @@ avp avputil::encodeString(int acode, int vcode, char flags, std::string value){
         ptr1--;
         i++;
     }
+    
+    //insert vendor code
+    if(vcode!=0){
+        char *ptr2 = (char*)&vcode;
+        ptr2=ptr2+3;
+        i=0;
+        while(i<4){
+            *resp=*ptr2;
+            resp++;
+            ptr2--;
+            i++;
+        }
+    }
+    
     //	 resp=resp-8;	//for display
     i=0;
     while(i<value.length()){
@@ -141,12 +159,18 @@ avp avputil::encodeString(int acode, int vcode, char flags, std::string value){
         buffer++;
         i++;
     }
-    resp=resp-l;
+    i=0;
+    while (i<padding) {
+        *resp=0x00;
+        resp++;
+        i++;
+    }
+    resp=resp-l-padding;
     //	 char *msg1 = new char[4];
     //	 for(int i=0;i<3;++i, ++ptr1)
     //	    msg1[2-i] = *ptr1;
     
-    avp a=avp(resp,l);
+    avp a=avp(resp,l+padding);
     return a;
 }
 
@@ -154,7 +178,7 @@ avp avputil::encodeInt32(int acode, int vcode, char flags, int value){
     
     int l=12;
     if(vcode!=0){
-        l=l+8;
+        l=l+4;
     }
     //char res[l];
     char* resp=new char[l];//res;
@@ -254,17 +278,100 @@ avp avputil::encodeAVP(int acode, int vcode,char flags, avp* list[],int l){
         ptr1--;
         i++;
     }
+    //insert vendor code
+    if(vcode!=0){
+        char *ptr2 = (char*)&vcode;
+        ptr2=ptr2+3;
+        i=0;
+        while(i<4){
+            *resp=*ptr2;
+            resp++;
+            ptr2--;
+            i++;
+        }
+    }
     //copy avps to rest of bytes
     for (i=0; i<l; i++) {
         //copy avp
         char *temp=list[i]->val;
         //list[i]->dump();
-        //printf("\n");
+        printf("\n");
         for (int j=0; j<list[i]->len; j++) {
             *resp=*temp;
             resp++;
             temp++;
         }
+    }
+    resp=resp-totallen;
+    avp a=avp(resp,totallen);
+    //printf("\n");
+    //a.dump();
+    return a;
+}
+
+avp avputil::encodeAVP(int acode, int vcode,char flags, avp* list,int l){
+    //avp a=avp(0,0);
+    int totallen=8;
+    for (int i=0; i<l; i++) {
+        //count total length
+        totallen=totallen+list->len;
+        list++;
+    }
+    list=list-l;
+    if(vcode!=0){
+        totallen=totallen+4;
+    }
+    char* resp=new char[totallen];//res;
+    char *ptr = (char*)&acode;
+    ptr=ptr+3;
+    int i=0;
+    while(i<4){
+        *resp=*ptr;
+        resp++;
+        ptr--;
+        i++;
+    }
+    *resp=flags;
+    //resp=resp-4;
+    resp++;
+    //	 char *msg = new char[4];
+    //	 for(int i=0;i<4;++i, ++ptr)
+    //	    msg[3-i] = *ptr;
+    //resp=resp-4;
+    
+    char *ptr1 = (char*)&totallen;
+    ptr1=ptr1+2;
+    i=0;
+    while(i<3){
+        *resp=*ptr1;
+        resp++;
+        ptr1--;
+        i++;
+    }
+    //insert vendor code
+    if(vcode!=0){
+        char *ptr2 = (char*)&vcode;
+        ptr2=ptr2+3;
+        i=0;
+        while(i<4){
+            *resp=*ptr2;
+            resp++;
+            ptr2--;
+            i++;
+        }
+    }
+    //copy avps to rest of bytes
+    for (i=0; i<l; i++) {
+        //copy avp
+        char *temp=list->val;
+        //list[i]->dump();
+        printf("\n");
+        for (int j=0; j<list->len; j++) {
+            *resp=*temp;
+            resp++;
+            temp++;
+        }
+        list++;
     }
     resp=resp-totallen;
     avp a=avp(resp,totallen);

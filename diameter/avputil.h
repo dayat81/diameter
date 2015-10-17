@@ -24,6 +24,7 @@ public:
     avp encodeString(int acode,int vcode,char flags,std::string value);
     avp encodeInt32(int acode,int vcode,char flags,int value);
     avp encodeAVP(int acode,int vcode,char flags,avp* list[],int l);
+    avp encodeAVP(int acode,int vcode,char flags,avp* list,int l);
 };
 
 #endif /* avputil_h */

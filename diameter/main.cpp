@@ -241,15 +241,17 @@ void *handle(void *sock){
         callee.db=db;
         e.connectCallback(&callee);
         e.db=db;
+        
         diameter reply=e.process(d);
-        
-        char resp[reply.len+4];
-        char* r=resp;
-        reply.compose(r);
-        
-        int w = write(newsock,resp,reply.len+4);
-        if(w<=0){
-            //fail write
+        if(reply.len>0){    //isrequest, need answer
+            char resp[reply.len+4];
+            char* r=resp;
+            reply.compose(r);
+            
+            int w = write(newsock,resp,reply.len+4);
+            if(w<=0){
+                //fail write
+            }
         }
     }
   if(n == 0)
