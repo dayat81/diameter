@@ -110,9 +110,8 @@ void entry::getRAR(char* msid,avp* &allavp,int &l,int &total){
         l++;
         total=total+cr_remove.len;
     }
-    //cr_install.dump();
-    //printf("\n");
-    //total=o.len+cr_install.len+cr_remove.len;
+    //reset rar_info
+    status = db->Put(rocksdb::WriteOptions(), rarinfo, "{\"delacg\":[],\"addacg\":[]}");
     allavp=new avp[l];
     allavp[0]=o;
     int i=1;
@@ -154,6 +153,9 @@ diameter entry::createRAR(char* msid){
     avp* allavp=new avp[1];
     int l,total;
     getRAR(msid,allavp, l, total);
+    if(l==1){
+        return diameter(0,0,0);
+    }
     int l_resp=20+total;
     char *ptr1 = (char*)&l_resp;
     char l_byte[3];

@@ -208,23 +208,26 @@ void *handlecommand(void *sock){
             }
             assert(it->status().ok());
         }else if (memcmp( params[0], "rar", strlen( "rar") ) == 0){
-            printf("send rar to %s \n",params[1]);
+            printf("send rar to %s %s \n",params[1],params[2]);
             //getrar here
             entry e=entry();
             e.db=db;
             char* msid=params[2];
             remove_escape(msid);
+            //printf("");
             diameter reply=e.createRAR(msid);
-            //reply.dump();
-            char resp[reply.len+4];
-            char* r=resp;
-            reply.compose(r);
-            
-            //find socket here
-            
-            int w = write(atoi(params[1]),resp,reply.len+4);
-            if(w<=0){
-                //fail write
+            if(reply.len>0){
+                //reply.dump();
+                char resp[reply.len+4];
+                char* r=resp;
+                reply.compose(r);
+                
+                //find socket here
+                
+                int w = write(atoi(params[1]),resp,reply.len+4);
+                if(w<=0){
+                    //fail write
+                }
             }
         }else if( memcmp( params[0], "show", strlen( "show") ) == 0 &&memcmp( params[1], "msid", strlen( "msid") ) == 0 ) {
             char* msid=params[2];
