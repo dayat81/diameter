@@ -220,6 +220,8 @@ void *handlecommand(void *sock){
             char* r=resp;
             reply.compose(r);
             
+            //find socket here
+            
             int w = write(atoi(params[1]),resp,reply.len+4);
             if(w<=0){
                 //fail write

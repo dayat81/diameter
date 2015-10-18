@@ -72,42 +72,57 @@ void entry::getRAR(char* msid,avp* &allavp,int &l,int &total){
     std::cout<<rarinfo<<" == "<<val<<std::endl;
     Document dom;
     dom.Parse(val.c_str());
-    
+    avp cr_install=avp(0, 0);
+    avp cr_remove=avp(0, 0);
+    l=1;
+    total=o.len;
     const Value& a = dom["addacg"];
     assert(a.IsArray());
-    avp* acg=new avp[a.Size()];
-    for (SizeType i = 0; i < a.Size(); i++){ // Uses SizeType instead of size_t
-        //printf("a[%d] = %s\n", i, a[i].GetString());   //map to charging-rule-name-avp
-        avp temp=util.encodeString(1005, 10415, 0xC0, a[i].GetString());
-        temp.dump();
-        //printf("\n");
-        *acg=temp;
-        acg++;
+    if(a.Size()>0){
+        avp* acg=new avp[a.Size()];
+        for (SizeType i = 0; i < a.Size(); i++){ // Uses SizeType instead of size_t
+            //printf("a[%d] = %s\n", i, a[i].GetString());   //map to charging-rule-name-avp
+            avp temp=util.encodeString(1005, 10415, 0xC0, a[i].GetString());
+            temp.dump();
+            //printf("\n");
+            *acg=temp;
+            acg++;
+        }
+        acg=acg-a.Size();
+        cr_install=util.encodeAVP(1001, 10415, 0xC0, acg, a.Size());
+        total=total+cr_install.len;
+        l++;
     }
-    acg=acg-a.Size();
-    avp cr_install=util.encodeAVP(1001, 10415, 0xC0, acg, a.Size());
-    
     const Value& del = dom["delacg"];
     assert(del.IsArray());
-    avp* delacg=new avp[del.Size()];
-    for (SizeType i = 0; i < del.Size(); i++){ // Uses SizeType instead of size_t
-        //printf("a[%d] = %s\n", i, a[i].GetString());   //map to charging-rule-name-avp
-        avp temp=util.encodeString(1005, 10415, 0xC0, del[i].GetString());
-        temp.dump();
-        //printf("\n");
-        *delacg=temp;
-        delacg++;
+    if(del.Size()>0){
+        avp* delacg=new avp[del.Size()];
+        for (SizeType i = 0; i < del.Size(); i++){ // Uses SizeType instead of size_t
+            //printf("a[%d] = %s\n", i, a[i].GetString());   //map to charging-rule-name-avp
+            avp temp=util.encodeString(1005, 10415, 0xC0, del[i].GetString());
+            temp.dump();
+            //printf("\n");
+            *delacg=temp;
+            delacg++;
+        }
+        delacg=delacg-del.Size();
+        cr_remove=util.encodeAVP(1002, 10415, 0xC0, delacg, del.Size());
+        l++;
+        total=total+cr_remove.len;
     }
-    delacg=delacg-del.Size();
-    avp cr_remove=util.encodeAVP(1002, 10415, 0xC0, delacg, del.Size());
     //cr_install.dump();
     //printf("\n");
-    total=o.len+cr_install.len+cr_remove.len;
-    l=3;
+    //total=o.len+cr_install.len+cr_remove.len;
     allavp=new avp[l];
     allavp[0]=o;
-    allavp[1]=cr_install;
-    allavp[2]=cr_remove;
+    int i=1;
+    if(cr_install.len>0){
+        allavp[i]=cr_install;
+        i++;
+    }
+    if(cr_remove.len>0){
+        allavp[i]=cr_remove;
+    }
 }
 void getCEA(diameter d,avp* &allavp,int &l,int &total,std::string &host){
     avputil util=avputil();
