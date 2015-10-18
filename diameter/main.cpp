@@ -207,15 +207,14 @@ void *handlecommand(void *sock){
                 std::cout << it->key().ToString() << ": " << it->value().ToString() << std::endl;
             }
             assert(it->status().ok());
-        }else if(memcmp( params[0], "rar", strlen( "rar") ) == 0){
-            printf("send rar to msid %s \n",params[1]);
-            //search sessionid of it
-            
-        }else if (memcmp( params[0], "send", strlen( "send") ) == 0){
-            printf("send to socket %s msg rar \n",params[1]);
+        }else if (memcmp( params[0], "rar", strlen( "rar") ) == 0){
+            printf("send rar to %s \n",params[1]);
             //getrar here
             entry e=entry();
-            diameter reply=e.createRAR();
+            e.db=db;
+            char* msid=params[2];
+            remove_escape(msid);
+            diameter reply=e.createRAR(msid);
             //reply.dump();
             char resp[reply.len+4];
             char* r=resp;

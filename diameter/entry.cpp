@@ -11,6 +11,10 @@
 #include "avputil.h"
 #include "logic.h"
 #include <iostream>
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
+using namespace rapidjson;
 entry::entry(){
 }
 void getUnable2Comply(diameter d,avp* &allavp,int &l,int &total){
@@ -51,7 +55,7 @@ void getUnable2Comply(diameter d,avp* &allavp,int &l,int &total){
     allavp[1]=sid;
     allavp[2]=sid1;
 }
-void getRAR(avp* &allavp,int &l,int &total){
+void entry::getRAR(char* msid,avp* &allavp,int &l,int &total){
     avputil util=avputil();
     
     char f=0x40;
@@ -59,13 +63,51 @@ void getRAR(avp* &allavp,int &l,int &total){
     //printf("size : %i\n",ori.size());
     avp o=util.encodeString(264,0,f,ori);
     //read rar_info
+    char* info="_rarinfo";
+    char rarinfo[strlen(msid)+strlen(info)];
+    strcpy(rarinfo,msid); // copy string one into the result.
+    strcat(rarinfo,info); // append string two to the result.
+    std::string val;
+    rocksdb::Status status = entry::db->Get(rocksdb::ReadOptions(),rarinfo, &val);
+    std::cout<<rarinfo<<" == "<<val<<std::endl;
+    Document dom;
+    dom.Parse(val.c_str());
     
-    //sid.dump();
+    const Value& a = dom["addacg"];
+    assert(a.IsArray());
+    avp* acg=new avp[a.Size()];
+    for (SizeType i = 0; i < a.Size(); i++){ // Uses SizeType instead of size_t
+        //printf("a[%d] = %s\n", i, a[i].GetString());   //map to charging-rule-name-avp
+        avp temp=util.encodeString(1005, 10415, 0xC0, a[i].GetString());
+        temp.dump();
+        //printf("\n");
+        *acg=temp;
+        acg++;
+    }
+    acg=acg-a.Size();
+    avp cr_install=util.encodeAVP(1001, 10415, 0xC0, acg, a.Size());
+    
+    const Value& del = dom["delacg"];
+    assert(del.IsArray());
+    avp* delacg=new avp[del.Size()];
+    for (SizeType i = 0; i < del.Size(); i++){ // Uses SizeType instead of size_t
+        //printf("a[%d] = %s\n", i, a[i].GetString());   //map to charging-rule-name-avp
+        avp temp=util.encodeString(1005, 10415, 0xC0, del[i].GetString());
+        temp.dump();
+        //printf("\n");
+        *delacg=temp;
+        delacg++;
+    }
+    delacg=delacg-del.Size();
+    avp cr_remove=util.encodeAVP(1002, 10415, 0xC0, delacg, del.Size());
+    //cr_install.dump();
     //printf("\n");
-    total=o.len;
-    l=1;
+    total=o.len+cr_install.len+cr_remove.len;
+    l=3;
     allavp=new avp[l];
     allavp[0]=o;
+    allavp[1]=cr_install;
+    allavp[2]=cr_remove;
 }
 void getCEA(diameter d,avp* &allavp,int &l,int &total,std::string &host){
     avputil util=avputil();
@@ -90,13 +132,13 @@ void getCEA(diameter d,avp* &allavp,int &l,int &total,std::string &host){
     allavp=new avp[l];
     allavp[0]=o;
 }
-diameter entry::createRAR(){
+diameter entry::createRAR(char* msid){
     printf("create RAR\n");
     char* h=new char[4];
     *h=0x01;
     avp* allavp=new avp[1];
     int l,total;
-    getRAR(allavp, l, total);
+    getRAR(msid,allavp, l, total);
     int l_resp=20+total;
     char *ptr1 = (char*)&l_resp;
     char l_byte[3];

@@ -27,7 +27,8 @@ public:
     diameter process(diameter d);
     void connectCallback(CallbackInterface *cb);
     void test(std::string host);
-    diameter createRAR();
+    diameter createRAR(char* msid);
+    void getRAR(char* msid,avp* &allavp,int &l,int &total);
 };
 
 #endif /* entry_h */ 
