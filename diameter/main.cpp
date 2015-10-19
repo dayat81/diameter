@@ -40,7 +40,7 @@ public:
 
     }
 };
-void remove_escape(char *string);
+//void remove_escape(char *string);
 void *handle(void *);
 void *handlecmd(void *);
 void *handlecommand(void *);
@@ -181,11 +181,19 @@ void *handlecmd(void *socket){
     return 0;
 }
 
+char* to_char(const std::string& string)
+{
+    char* return_string = new char[string.length() + 1];
+    strcpy(return_string, string.c_str());
+    
+    return return_string;
+}
+
 void *handlecommand(void *sock){
     int newsock = *(int*)sock;
     int bytes;
     char cClientMessage[599];
-    
+    int prompt=write(newsock, "pcrf>", 5);
     while((bytes = recv(newsock, cClientMessage, sizeof(cClientMessage), 0)) > 0)
     {
         char* chars_array = strtok(cClientMessage, "#:");
@@ -203,19 +211,28 @@ void *handlecommand(void *sock){
         if( memcmp( params[0], "show", strlen( "show") ) == 0 &&memcmp( params[1], "all", strlen( "all") ) == 0 ) {
             //printf("dump peer here\n");
             rocksdb::Iterator* it = db->NewIterator(rocksdb::ReadOptions());
+            char result[1024];
             for (it->SeekToFirst(); it->Valid(); it->Next()) {
                 std::cout << it->key().ToString() << ": " << it->value().ToString() << std::endl;
+                char* key = to_char(it->key().ToString());
+                char* val = to_char(it->value().ToString());
+                strcat(result, key);
+                strcat(result, ":");
+                strcat(result, val);
+                strcat(result, "\n");
             }
             assert(it->status().ok());
+            strcat(result, "pcrf>");
+            int res=write(newsock, result, strlen(result));
         }else if (memcmp( params[0], "rar", strlen( "rar") ) == 0){
             printf("send rar to %s %s \n",params[1],params[2]);
             //getrar here
             entry e=entry();
             e.db=db;
-            char* msid=params[2];
-            remove_escape(msid);
+//            char* msid=params[2];
+//            remove_escape(msid);
             //printf("");
-            diameter reply=e.createRAR(msid);
+            diameter reply=e.createRAR(params[2]);
             if(reply.len>0){
                 //reply.dump();
                 char resp[reply.len+4];
@@ -230,19 +247,19 @@ void *handlecommand(void *sock){
                 }
             }
         }else if( memcmp( params[0], "show", strlen( "show") ) == 0 &&memcmp( params[1], "msid", strlen( "msid") ) == 0 ) {
-            char* msid=params[2];
-            remove_escape(msid);
-            printf("show msid %s\n",msid);
+//            char* msid=params[2];
+//            remove_escape(msid);
+//            printf("show msid %s\n",msid);
             std::string val;
-            rocksdb::Status status = db->Get(rocksdb::ReadOptions(),msid, &val);
+            rocksdb::Status status = db->Get(rocksdb::ReadOptions(),params[2], &val);
             std::cout<<val<<std::endl;
             
         }else if( memcmp( params[0], "delacg", strlen( "delacg") ) == 0) {
-            char* msid=params[2];
-            remove_escape(msid);
-            printf("show msid %s\n",msid);
+//            char* msid=params[2];
+//            remove_escape(msid);
+//            printf("show msid %s\n",msid);
             std::string val,val1;
-            rocksdb::Status status = db->Get(rocksdb::ReadOptions(),msid, &val);
+            rocksdb::Status status = db->Get(rocksdb::ReadOptions(),params[2], &val);
             std::cout<<val<<std::endl;
             char json[val.size()+1];//as 1 char space for null is also required
             strcpy(json, val.c_str());
@@ -263,8 +280,8 @@ void *handlecommand(void *sock){
                     //write rarinfo
                     //write rarinfo
                     char* info="_rarinfo";
-                    char rarinfo[strlen(msid)+strlen(info)];
-                    strcpy(rarinfo,msid); // copy string one into the result.
+                    char rarinfo[strlen(params[2])+strlen(info)];
+                    strcpy(rarinfo,params[2]); // copy string one into the result.
                     strcat(rarinfo,info); // append string two to the result.
                     //printf("rarinfo %s\n",rarinfo);
                     status = db->Get(rocksdb::ReadOptions(),rarinfo, &val1);
@@ -297,15 +314,15 @@ void *handlecommand(void *sock){
             dom.Accept(writer);
             // string str = buffer.GetString();
             printf("--\n%s\n--\n", strbuf.GetString());
-            status = db->Put(rocksdb::WriteOptions(),msid, strbuf.GetString());
+            status = db->Put(rocksdb::WriteOptions(),params[2], strbuf.GetString());
 
         }else if( memcmp( params[0], "addacg", strlen( "addacg") ) == 0) {
-            char* msid=params[2];
-            remove_escape(msid);
-            
-            printf("show msid %s\n",msid);
+//            char* msid=params[2];
+//            remove_escape(msid);
+//            
+//            printf("show msid %s\n",msid);
             std::string val,val1;
-            rocksdb::Status status = db->Get(rocksdb::ReadOptions(),msid, &val);
+            rocksdb::Status status = db->Get(rocksdb::ReadOptions(),params[2], &val);
             //std::cout<<val<<std::endl;
             char json[val.size()+1];//as 1 char space for null is also required
             strcpy(json, val.c_str());
@@ -322,8 +339,8 @@ void *handlecommand(void *sock){
             a.PushBack(newacg.SetString(params[1], strlen(params[1])), allocator);
             //write rarinfo
             char* info="_rarinfo";
-            char rarinfo[strlen(msid)+strlen(info)];
-            strcpy(rarinfo,msid); // copy string one into the result.
+            char rarinfo[strlen(params[2])+strlen(info)];
+            strcpy(rarinfo,params[2]); // copy string one into the result.
             strcat(rarinfo,info); // append string two to the result.
             //printf("rarinfo %s\n",rarinfo);
             status = db->Get(rocksdb::ReadOptions(),rarinfo, &val1);
@@ -353,7 +370,7 @@ void *handlecommand(void *sock){
             dom.Accept(writer);
             // string str = buffer.GetString();
             printf("--\n%s\n--\n", strbuf.GetString());
-            status = db->Put(rocksdb::WriteOptions(),msid, strbuf.GetString());
+            status = db->Put(rocksdb::WriteOptions(),params[2], strbuf.GetString());
             
         }
     }
@@ -368,20 +385,20 @@ void *handlecommand(void *sock){
     }
     return 0;
 }
-void remove_escape(char *string)
-{
-    char *read, *write;
-    
-    for(read = write = string; *read != '\0'; ++read)
-    {
-        /* edit: or if(!isspace(*read)), see swoopy's suggestion below */
-        if(*read != '\r' && *read!='\n')
-        {
-            *(write++) = *read;
-        }
-    }
-    *write = '\0';
-}
+//void remove_escape(char *string)
+//{
+//    char *read, *write;
+//    
+//    for(read = write = string; *read != '\0'; ++read)
+//    {
+//        /* edit: or if(!isspace(*read)), see swoopy's suggestion below */
+//        if(*read != '\r' && *read!='\n')
+//        {
+//            *(write++) = *read;
+//        }
+//    }
+//    *write = '\0';
+//}
 void *handle(void *sock){
     int newsock = *(int*)sock;
     char head[4];
