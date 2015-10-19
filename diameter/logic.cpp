@@ -95,28 +95,35 @@ void logic::getCCA(diameter d,avp* &allavp,int &l,int &total){
             }
         }
         std::cout<<msidstring<<std::endl;
+        std::string msidsesinfo=msidstring;
         std::string msidrarinfo=msidstring;
         //store sessid,msid
+        
         rocksdb::Status status = db->Put(rocksdb::WriteOptions(), sessidval, msidstring);
-        status = db->Put(rocksdb::WriteOptions(), msidrarinfo.append("_sess"), sessidval);
+        status = db->Put(rocksdb::WriteOptions(), msidsesinfo.append("_sess"), sessidval);
+        status = db->Put(rocksdb::WriteOptions(), msidrarinfo.append("_rarinfo"), "{\"addacg\":[],\"delacg\":[]}");
         std::string val;
         status = db->Get(rocksdb::ReadOptions(), msidstring, &val);
+        
         std::cout<<val<<std::endl;
         Document dom;
         dom.Parse(val.c_str());
         const Value& a = dom["acg"];
         assert(a.IsArray());
-        avp* acg=new avp[a.Size()];
-        for (SizeType i = 0; i < a.Size(); i++){ // Uses SizeType instead of size_t
-            //printf("a[%d] = %s\n", i, a[i].GetString());   //map to charging-rule-name-avp
-            avp temp=util.encodeString(1005, 10415, 0xC0, a[i].GetString());
-            temp.dump();
-            //printf("\n");
-            *acg=temp;
-            acg++;
+        avp cr_install=avp(0,0);
+        if(a.Size()>0){
+            avp* acg=new avp[a.Size()];
+            for (SizeType i = 0; i < a.Size(); i++){ // Uses SizeType instead of size_t
+                //printf("a[%d] = %s\n", i, a[i].GetString());   //map to charging-rule-name-avp
+                avp temp=util.encodeString(1005, 10415, 0xC0, a[i].GetString());
+                temp.dump();
+                //printf("\n");
+                *acg=temp;
+                acg++;
+            }
+            acg=acg-a.Size();
+            cr_install=util.encodeAVP(1001, 10415, 0xC0, acg, a.Size());
         }
-        acg=acg-a.Size();
-        avp cr_install=util.encodeAVP(1001, 10415, 0xC0, acg, a.Size());
         char f=0x40;
         std::string ori ="vmclient.myrealm.example";
         //printf("size : %i\n",ori.size());
@@ -137,12 +144,17 @@ void logic::getCCA(diameter d,avp* &allavp,int &l,int &total){
         avp sid1=util.encodeAVP(443, 0, 0x40, listavp1, 2);
         //printf("\n");
         total=sid.len+o.len+sid1.len+cr_install.len;
-        l=4;
+        l=3;
+        if(cr_install.len>0){
+            l++;
+        }
         allavp=new avp[l];
         allavp[0]=o;
         allavp[1]=sid;
         allavp[2]=sid1;
-        allavp[3]=cr_install;
+        if(cr_install.len>0){
+            allavp[3]=cr_install;
+        }
     }
 }
 

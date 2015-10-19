@@ -72,16 +72,18 @@ void entry::getRAR(char* msid,avp* &allavp,int &l,int &total){
     std::cout<<rarinfo<<" == "<<val<<std::endl;
     Document dom;
     dom.Parse(val.c_str());
+    
     avp cr_install=avp(0, 0);
     avp cr_remove=avp(0, 0);
     l=1;
     total=o.len;
     const Value& a = dom["addacg"];
     assert(a.IsArray());
+    //printf("cek addacg\n");
     if(a.Size()>0){
         avp* acg=new avp[a.Size()];
         for (SizeType i = 0; i < a.Size(); i++){ // Uses SizeType instead of size_t
-            //printf("a[%d] = %s\n", i, a[i].GetString());   //map to charging-rule-name-avp
+            
             avp temp=util.encodeString(1005, 10415, 0xC0, a[i].GetString());
             temp.dump();
             //printf("\n");
@@ -95,10 +97,12 @@ void entry::getRAR(char* msid,avp* &allavp,int &l,int &total){
     }
     const Value& del = dom["delacg"];
     assert(del.IsArray());
+    //printf("cek delacg\n");
     if(del.Size()>0){
+        printf("delsize %i\n",del.Size());
         avp* delacg=new avp[del.Size()];
         for (SizeType i = 0; i < del.Size(); i++){ // Uses SizeType instead of size_t
-            //printf("a[%d] = %s\n", i, a[i].GetString());   //map to charging-rule-name-avp
+            
             avp temp=util.encodeString(1005, 10415, 0xC0, del[i].GetString());
             temp.dump();
             //printf("\n");
