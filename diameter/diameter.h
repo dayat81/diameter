@@ -34,6 +34,7 @@ public:
     void dump();
     void populateHeader();
     avp getAVP(int acode,int vcode);
+    avp copyAVP(int acode,int vcode);
  
     // call function with one extrar (int by value) last parameter
 //    template < typename FN, typename... ARGS >

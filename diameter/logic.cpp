@@ -60,6 +60,9 @@ void logic::getResult(diameter d,avp* &allavp,int &l,int &total){
 
 void logic::getCCA(diameter d,avp* &allavp,int &l,int &total){
     avputil util=avputil();
+    avp cca_sessid=d.copyAVP(263, 0);
+    //cca_sessid.dump();
+    printf("\n");
     //read sessionid & requesttype
     std::string sessidval="";
     avp sessid=d.getAVP(263, 0);
@@ -143,15 +146,15 @@ void logic::getCCA(diameter d,avp* &allavp,int &l,int &total){
         avp* listavp1[2]={&id_t1,&id_d1};
         avp sid1=util.encodeAVP(443, 0, 0x40, listavp1, 2);
         //printf("\n");
-        total=sid.len+o.len+sid1.len+cr_install.len;
+        total=sid.len+o.len+cca_sessid.len+cr_install.len;
         l=3;
         if(cr_install.len>0){
             l++;
         }
         allavp=new avp[l];
-        allavp[0]=o;
-        allavp[1]=sid;
-        allavp[2]=sid1;
+        allavp[0]=cca_sessid;
+        allavp[1]=o;
+        allavp[2]=sid;
         if(cr_install.len>0){
             allavp[3]=cr_install;
         }
