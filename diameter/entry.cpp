@@ -14,6 +14,10 @@
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
+#include <string>
+#include <sstream>
+#include <vector>
+
 using namespace rapidjson;
 entry::entry(){
 }
@@ -55,6 +59,21 @@ void getUnable2Comply(diameter d,avp* &allavp,int &l,int &total){
     allavp[1]=sid;
     allavp[2]=sid1;
 }
+std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
+    std::stringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+    return elems;
+}
+
+
+std::vector<std::string> split(const std::string &s, char delim) {
+    std::vector<std::string> elems;
+    split(s, delim, elems);
+    return elems;
+}
 void entry::getRAR(char* msid,avp* &allavp,int &l,int &total){
     avputil util=avputil();
     //get sessionid of the msid
@@ -70,6 +89,10 @@ void entry::getRAR(char* msid,avp* &allavp,int &l,int &total){
     avp sessid=util.encodeString(263, 0, f, valses);
     avp o=util.encodeString(264,0,f,ORIGIN_HOST);
     avp realm=util.encodeString(296,0,f,ORIGIN_REALM);
+    avp authappid=util.encodeInt32(258, 0, f, 16777238);
+    std::string peer=split(valses, ';')[0];
+    avp dh=util.encodeString(293, 0, f, peer);
+    avp rartype=util.encodeInt32(285, 0, f, 0);
     //read rar_info
     char* info="_rarinfo";
     char rarinfo[strlen(msid)+strlen(info)];
@@ -83,8 +106,9 @@ void entry::getRAR(char* msid,avp* &allavp,int &l,int &total){
     
     avp cr_install=avp(0, 0);
     avp cr_remove=avp(0, 0);
-    l=3;
-    total=o.len+sessid.len+realm.len;
+    l=6;
+    int i=l;
+    total=o.len+sessid.len+realm.len+authappid.len+dh.len+rartype.len;
     const Value& a = dom["addacg"];
     assert(a.IsArray());
     //printf("cek addacg\n");
@@ -128,7 +152,9 @@ void entry::getRAR(char* msid,avp* &allavp,int &l,int &total){
     allavp[0]=sessid;
     allavp[1]=o;
     allavp[2]=realm;
-    int i=3;
+    allavp[3]=authappid;
+    allavp[4]=dh;
+    allavp[5]=rartype;
     if(cr_install.len>0){
         allavp[i]=cr_install;
         i++;
@@ -253,7 +279,7 @@ diameter entry::process(diameter d){
     if(reqbit==0){
         return diameter(0, 0, 0);
     }
-    printf("reqbit : %i\n",reqbit);
+    //printf("reqbit : %i\n",reqbit);
     int ccode=((*(d.ccode) & 0xff) << 16)| ((*(d.ccode+1) & 0xff) << 8) | ((*(d.ccode+2)& 0xff));
    int i=0;
     logic lojik=logic();

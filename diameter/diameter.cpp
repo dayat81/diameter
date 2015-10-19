@@ -124,8 +124,9 @@ avp diameter::getAVP(int acode, int vcode){
     int vendorbit;
     int lavpval;
     int padding;
-    int vendorcode=0;
+    int vendorcode;
     while (curr<len&&!found) {
+        vendorcode=0;
         avpcode=(((*b& 0xff) << 24) | ((*(b+1) & 0xff) << 16)| ((*(b+2) & 0xff) << 8) | ((*(b+3)& 0xff)));
         curr=curr+4;
         b=b+4;
