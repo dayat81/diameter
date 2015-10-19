@@ -28,7 +28,7 @@ void getUnable2Comply(diameter d,avp* &allavp,int &l,int &total){
     }
     
     char f=0x40;
-    std::string ori ="vmclient.myrealm.example";
+    std::string ori =ORIGIN_HOST;
     //printf("size : %i\n",ori.size());
     avp o=util.encodeString(264,0,f,ori);
     //o.dump();
@@ -127,6 +127,18 @@ void entry::getRAR(char* msid,avp* &allavp,int &l,int &total){
         allavp[i]=cr_remove;
     }
 }
+void getDWA(avp* &allavp,int &l,int &total){
+    avputil util=avputil();
+    char f=0x40;
+    avp o=util.encodeString(264,0,f,ORIGIN_HOST);
+    avp realm=util.encodeString(296,0,f,ORIGIN_REALM);
+    avp rc=util.encodeInt32(268, 0, f, 2001);
+    total=o.len+realm.len+rc.len;
+    allavp=new avp[l];
+    allavp[0]=o;
+    allavp[1]=realm;
+    allavp[2]=rc;
+}
 void getCEA(diameter d,avp* &allavp,int &l,int &total,std::string &host){
     avputil util=avputil();
     
@@ -139,16 +151,34 @@ void getCEA(diameter d,avp* &allavp,int &l,int &total,std::string &host){
     }
     
     char f=0x40;
-    std::string ori ="vmclient.myrealm.example";
-    //printf("size : %i\n",ori.size());
-    avp o=util.encodeString(264,0,f,ori);
-    
+    avp o=util.encodeString(264,0,f,ORIGIN_HOST);
+    avp realm=util.encodeString(296,0,f,ORIGIN_REALM);
+    avp vid=util.encodeInt32(266, 0, f, 0);
+    avp pn=util.encodeString(269, 0, f, "simple PCRF");
+    unsigned int ipval[4]={10,195,84,157};
+    avp ip=util.encodeIP(257, 0, f, ipval);
+    avp authappid=util.encodeInt32(258, 0, f, 16777238);
+    avp svid=util.encodeInt32(265, 0, f, 10415);
+    avp svid1=util.encodeInt32(265, 0, f, 193);
+    avp rc=util.encodeInt32(268, 0, f, 2001);
+    avp osid=util.encodeInt32(278, 0, f, 1);
+    //ip.dump();
+    //vid.dump();
     //sid.dump();
     //printf("\n");
-    total=o.len;
-    l=1;
+    total=o.len+realm.len+vid.len+pn.len+ip.len+authappid.len+svid.len+svid1.len+rc.len+osid.len;
+    l=10;
     allavp=new avp[l];
     allavp[0]=o;
+    allavp[1]=realm;
+    allavp[2]=vid;
+    allavp[3]=pn;
+    allavp[4]=ip;
+    allavp[5]=authappid;
+    allavp[6]=svid;
+    allavp[7]=svid1;
+    allavp[8]=rc;
+    allavp[9]=osid;
 }
 diameter entry::createRAR(char* msid){
     printf("create RAR\n");
@@ -231,7 +261,7 @@ diameter entry::process(diameter d){
     }else if(ccode==272){//ccr
         lojik.getCCA(d, allavp, l,total);
     }else if(ccode==280){//watchdog
-        
+        getDWA( allavp, l, total);
     }else{
         getUnable2Comply(d, allavp, l, total);
     }

@@ -174,6 +174,81 @@ avp avputil::encodeString(int acode, int vcode, char flags, std::string value){
     return a;
 }
 
+avp avputil::encodeIP(int acode, int vcode, char flags, unsigned int value[]){
+    
+    int l=16;
+    if(vcode!=0){
+        l=l+4;
+    }
+    //char res[l];
+    char* resp=new char[l];//res;
+    
+    
+    
+    char *ptr = (char*)&acode;
+    ptr=ptr+3;
+    unsigned int i=0;
+    while(i<4){
+        *resp=*ptr;
+        resp++;
+        ptr--;
+        i++;
+    }
+    *resp=flags;
+    //resp=resp-4;
+    resp++;
+    //	 char *msg = new char[4];
+    //	 for(int i=0;i<4;++i, ++ptr)
+    //	    msg[3-i] = *ptr;
+    //resp=resp-4;
+    
+    char *ptr1 = (char*)&l;
+    ptr1=ptr1+2;
+    i=0;
+    while(i<3){
+        *resp=*ptr1;
+        resp++;
+        ptr1--;
+        i++;
+    }
+    //	 resp=resp-8;	//for display
+    
+//    unsigned char bytes[4];
+//    //
+//    bytes[0] = value[0];
+//    bytes[1] = value[1];
+//    bytes[2] = value[2];
+//    bytes[3] = value[3];
+    *resp=0x00;
+    resp++;
+    *resp=0x01;
+    resp++;
+    unsigned int* b=value;
+    i=0;
+    while(i<4){
+        *resp=*b;
+        resp++;
+        b++;
+        i++;
+    }
+    *resp=0x00;
+    resp++;
+    *resp=0x01;
+    resp++;
+    resp=resp-l;
+    //	 char *msg1 = new char[4];
+    //	 for(int i=0;i<3;++i, ++ptr1)
+    //	    msg1[2-i] = *ptr1;
+    
+    avp a=avp(resp,l);
+    return a;
+    
+    
+    //    avp a=avp(b,4);
+    //
+    //    return a;
+}
+
 avp avputil::encodeInt32(int acode, int vcode, char flags, int value){
     
     int l=12;
