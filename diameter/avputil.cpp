@@ -286,6 +286,19 @@ avp avputil::encodeInt32(int acode, int vcode, char flags, int value){
         ptr1--;
         i++;
     }
+    
+    //insert vendor code
+    if(vcode!=0){
+        char *ptr2 = (char*)&vcode;
+        ptr2=ptr2+3;
+        i=0;
+        while(i<4){
+            *resp=*ptr2;
+            resp++;
+            ptr2--;
+            i++;
+        }
+    }
     //	 resp=resp-8;	//for display
     
     char bytes[4];
@@ -324,7 +337,7 @@ avp avputil::encodeAVP(int acode, int vcode,char flags, avp* list[],int l){
         totallen=totallen+list[i]->len;
     }
     if(vcode!=0){
-        totallen=totallen+8;
+        totallen=totallen+4;
     }
     char* resp=new char[totallen];//res;
     char *ptr = (char*)&acode;
