@@ -73,6 +73,7 @@ void logic::getCCA(diameter d,avp* &allavp,int &l,int &total){
         req_type=util.decodeAsInt(reqtype);
     }
     avp cca_req_num=d.copyAVP(415, 0);
+    avp cr_install=avp(0,0);
     if(req_type==1){
         //read avp msid
         bool exit=false;
@@ -112,7 +113,7 @@ void logic::getCCA(diameter d,avp* &allavp,int &l,int &total){
         dom.Parse(val.c_str());
         const Value& a = dom["acg"];
         assert(a.IsArray());
-        avp cr_install=avp(0,0);
+        
         if(a.Size()>0){
             avp* acg=new avp[a.Size()];
             for (SizeType i = 0; i < a.Size(); i++){ // Uses SizeType instead of size_t
@@ -126,43 +127,38 @@ void logic::getCCA(diameter d,avp* &allavp,int &l,int &total){
             acg=acg-a.Size();
             cr_install=util.encodeAVP(1001, 10415, 0xC0, acg, a.Size());
         }
-        char f=0x40;
-        avp o=util.encodeString(264,0,f,ORIGIN_HOST);
-        avp realm=util.encodeString(296,0,f,ORIGIN_REALM);
-        avp authappid=util.encodeInt32(258, 0, f, 16777238);
-        avp rc=util.encodeInt32(268, 0, f, 2001);
-        avp flid=util.encodeInt32(629, 10415, 0xc0, 1);
-//        printf("========\n");
-//        flid.dump();
-//        printf("\n");
-        avp fl=util.encodeInt32(630, 10415, 0xc0, 3);
-//        fl.dump();
-//        printf("\n");
-        avp vid=util.encodeInt32(266, 0, f, 10415);
-//        vid.dump();
-//        printf("\n");
-        avp* list_fl[3]={&vid,&flid,&fl};
-        avp sf=util.encodeAVP(628, 10415, 0xc0, list_fl, 3);
-//        sf.dump();
-//        printf("======\n");
-        total=cca_sessid.len+o.len+realm.len+cca_req_type.len+cca_req_num.len+authappid.len+rc.len+sf.len;
-        l=8;
-        if(cr_install.len>0){
-            total=total+cr_install.len;
-            l++;
-        }
-        allavp=new avp[l];
-        allavp[0]=cca_sessid;
-        allavp[1]=o;
-        allavp[2]=realm;
-        allavp[3]=cca_req_type;
-        allavp[4]=cca_req_num;
-        allavp[5]=authappid;
-        allavp[6]=rc;
-        allavp[7]=sf;
-        if(cr_install.len>0){
-            allavp[l-1]=cr_install;
-        }
+   
+    }else if (req_type==3){
+        //delete sessid
+    }
+    char f=0x40;
+    avp o=util.encodeString(264,0,f,ORIGIN_HOST);
+    avp realm=util.encodeString(296,0,f,ORIGIN_REALM);
+    avp authappid=util.encodeInt32(258, 0, f, 16777238);
+    avp rc=util.encodeInt32(268, 0, f, 2001);
+    avp flid=util.encodeInt32(629, 10415, 0xc0, 1);
+    avp fl=util.encodeInt32(630, 10415, 0xc0, 3);
+    avp vid=util.encodeInt32(266, 0, f, 10415);
+    avp* list_fl[3]={&vid,&flid,&fl};
+    avp sf=util.encodeAVP(628, 10415, 0xc0, list_fl, 3);
+    
+    total=cca_sessid.len+o.len+realm.len+cca_req_type.len+cca_req_num.len+authappid.len+rc.len+sf.len;
+    l=8;
+    if(cr_install.len>0){
+        total=total+cr_install.len;
+        l++;
+    }
+    allavp=new avp[l];
+    allavp[0]=cca_sessid;
+    allavp[1]=o;
+    allavp[2]=realm;
+    allavp[3]=cca_req_type;
+    allavp[4]=cca_req_num;
+    allavp[5]=authappid;
+    allavp[6]=rc;
+    allavp[7]=sf;
+    if(cr_install.len>0){
+        allavp[l-1]=cr_install;
     }
 }
 

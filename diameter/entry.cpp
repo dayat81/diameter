@@ -57,26 +57,34 @@ void getUnable2Comply(diameter d,avp* &allavp,int &l,int &total){
 }
 void entry::getRAR(char* msid,avp* &allavp,int &l,int &total){
     avputil util=avputil();
+    //get sessionid of the msid
+    char* sesinfo="_sess";
+    char sessinfo[strlen(msid)+strlen(sesinfo)];
+    strcpy(sessinfo,msid); // copy string one into the result.
+    strcat(sessinfo,sesinfo); // append string two to the result.
+    std::string valses;
+    rocksdb::Status status = entry::db->Get(rocksdb::ReadOptions(),sessinfo, &valses);
+    std::cout<<sessinfo<<" == "<<valses<<"=="<<std::endl;
     
     char f=0x40;
-    std::string ori ="vmclient.myrealm.example";
-    //printf("size : %i\n",ori.size());
-    avp o=util.encodeString(264,0,f,ori);
+    avp sessid=util.encodeString(263, 0, f, valses);
+    avp o=util.encodeString(264,0,f,ORIGIN_HOST);
+    avp realm=util.encodeString(296,0,f,ORIGIN_REALM);
     //read rar_info
     char* info="_rarinfo";
     char rarinfo[strlen(msid)+strlen(info)];
     strcpy(rarinfo,msid); // copy string one into the result.
     strcat(rarinfo,info); // append string two to the result.
     std::string val;
-    rocksdb::Status status = entry::db->Get(rocksdb::ReadOptions(),rarinfo, &val);
+    status = entry::db->Get(rocksdb::ReadOptions(),rarinfo, &val);
     std::cout<<rarinfo<<" == "<<val<<std::endl;
     Document dom;
     dom.Parse(val.c_str());
     
     avp cr_install=avp(0, 0);
     avp cr_remove=avp(0, 0);
-    l=1;
-    total=o.len;
+    l=3;
+    total=o.len+sessid.len+realm.len;
     const Value& a = dom["addacg"];
     assert(a.IsArray());
     //printf("cek addacg\n");
@@ -117,8 +125,10 @@ void entry::getRAR(char* msid,avp* &allavp,int &l,int &total){
     //reset rar_info
     status = db->Put(rocksdb::WriteOptions(), rarinfo, "{\"delacg\":[],\"addacg\":[]}");
     allavp=new avp[l];
-    allavp[0]=o;
-    int i=1;
+    allavp[0]=sessid;
+    allavp[1]=o;
+    allavp[2]=realm;
+    int i=3;
     if(cr_install.len>0){
         allavp[i]=cr_install;
         i++;
