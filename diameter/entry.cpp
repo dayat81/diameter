@@ -89,6 +89,7 @@ void entry::getRAR(char* msid,avp* &allavp,int &l,int &total){
     avp sessid=util.encodeString(263, 0, f, valses);
     avp o=util.encodeString(264,0,f,ORIGIN_HOST);
     avp realm=util.encodeString(296,0,f,ORIGIN_REALM);
+    avp drealm=util.encodeString(283, 0, f, "xlggsn.id");
     avp authappid=util.encodeInt32(258, 0, f, 16777238);
     std::string peer=split(valses, ';')[0];
     avp dh=util.encodeString(293, 0, f, peer);
@@ -106,9 +107,9 @@ void entry::getRAR(char* msid,avp* &allavp,int &l,int &total){
     
     avp cr_install=avp(0, 0);
     avp cr_remove=avp(0, 0);
-    l=6;
+    l=7;
     int i=l;
-    total=o.len+sessid.len+realm.len+authappid.len+dh.len+rartype.len;
+    total=o.len+sessid.len+realm.len+authappid.len+dh.len+rartype.len+drealm.len;
     const Value& a = dom["addacg"];
     assert(a.IsArray());
     //printf("cek addacg\n");
@@ -116,7 +117,7 @@ void entry::getRAR(char* msid,avp* &allavp,int &l,int &total){
         avp* acg=new avp[a.Size()];
         for (SizeType i = 0; i < a.Size(); i++){ // Uses SizeType instead of size_t
             
-            avp temp=util.encodeString(1005, 10415, 0xC0, a[i].GetString());
+            avp temp=util.encodeString(1004, 10415, 0xC0, a[i].GetString());
             temp.dump();
             //printf("\n");
             *acg=temp;
@@ -135,7 +136,7 @@ void entry::getRAR(char* msid,avp* &allavp,int &l,int &total){
         avp* delacg=new avp[del.Size()];
         for (SizeType i = 0; i < del.Size(); i++){ // Uses SizeType instead of size_t
             
-            avp temp=util.encodeString(1005, 10415, 0xC0, del[i].GetString());
+            avp temp=util.encodeString(1004, 10415, 0xC0, del[i].GetString());
             temp.dump();
             //printf("\n");
             *delacg=temp;
@@ -155,6 +156,7 @@ void entry::getRAR(char* msid,avp* &allavp,int &l,int &total){
     allavp[3]=authappid;
     allavp[4]=dh;
     allavp[5]=rartype;
+    allavp[6]=drealm;
     if(cr_install.len>0){
         allavp[i]=cr_install;
         i++;
