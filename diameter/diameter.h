@@ -16,7 +16,8 @@
 #define ORIGIN_REALM   "xltest.id"
 #define HOST_IP "0.0.0.0"
 #define DB_PATH "/Users/dayat81/dbfile/testdb"
-
+#define PORT    "3868" /* Port to listen on */
+#define CMDPORT    "1234" /* Port to listen on */
 class diameter{
 
 public:

@@ -21,7 +21,7 @@
 #include "rapidjson/stringbuffer.h"
 #include "entry.h"
 
-#define PORT    "3868" /* Port to listen on */
+
 #define BACKLOG     10  /* Passed to listen() */
 using namespace rapidjson;
 //this class maintain socket list
@@ -70,7 +70,7 @@ int main(void)
     memset(&hints1, 0, sizeof hints1);
     hints1.ai_family = AF_INET;
     hints1.ai_socktype = SOCK_STREAM;
-    if (getaddrinfo(HOST_IP, "1234", &hints1, &res1) != 0) {
+    if (getaddrinfo(HOST_IP, CMDPORT, &hints1, &res1) != 0) {
         perror("getaddrinfo");
         return 1;
     }
