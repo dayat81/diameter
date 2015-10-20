@@ -26,7 +26,7 @@ void getUnable2Comply(diameter d,avp* &allavp,int &l,int &total){
     
     //read avp
     avp ori_host=d.getAVP(264, 0);
-    printf("ori len %i \n",ori_host.len);
+    //printf("ori len %i \n",ori_host.len);
     if(ori_host.len>0){
         std::cout<<util.decodeAsString(ori_host)<<std::endl;
     }
@@ -182,7 +182,7 @@ void getCEA(diameter d,avp* &allavp,int &l,int &total,std::string &host){
     
     //read avp
     avp ori_host=d.getAVP(264, 0);
-    printf("ori len %i \n",ori_host.len);
+    //printf("ori len %i \n",ori_host.len);
     if(ori_host.len>0){
         //std::cout<<util.decodeAsString(ori_host)<<std::endl;
         host=util.decodeAsString(ori_host);
@@ -269,7 +269,9 @@ diameter entry::createRAR(char* msid){
             b++;
             temp++;
         }
+        delete allavp[i].val;
     }
+    delete allavp;
     b=b-l_resp+4;
     diameter answer=diameter(h,b,l_resp-4);
     //answer.dump();
@@ -355,6 +357,7 @@ diameter entry::process(diameter d){
             b++;
             temp++;
         }
+        //delete allavp[i].val;
     }
     b=b-l_resp+4;
 
@@ -372,6 +375,6 @@ void entry::connectCallback(CallbackInterface *cb)
 // Test the callback to make sure it works.
 void entry::test(std::string host)
 {
-    printf("Caller::test() calling callback...\n");
+    //printf("Caller::test() calling callback...\n");
     entry::m_cb -> cbiCallbackFunction(host);
 }
