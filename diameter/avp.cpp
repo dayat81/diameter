@@ -26,3 +26,19 @@ void avp::dump(){
     }
     val=val-len;
 }
+
+char* avp::copy(){
+    char* res=new char[len];
+    int i=0;
+    while (i<len) {
+        //printf("%02X ",*val);
+        *res=*val;
+        res++;
+        val++;
+        i++;
+    }
+    val=val-len;
+    res=res-len;
+    
+    return res;
+}

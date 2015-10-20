@@ -17,6 +17,7 @@ public:
     avp(char* v,int len);
     avp();
     void dump();
+    char* copy();
 };
 
 #endif /* avp_h */

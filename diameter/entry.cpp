@@ -357,8 +357,9 @@ diameter entry::process(diameter d){
             b++;
             temp++;
         }
-        //delete allavp[i].val;
+        delete allavp[i].val;
     }
+    delete allavp;
     b=b-l_resp+4;
 
     diameter answer=diameter(h, b, l_resp-4);

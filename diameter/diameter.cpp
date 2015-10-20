@@ -97,7 +97,8 @@ avp diameter::copyAVP(int acode, int vcode){
             if(padding!=0){
                 padding=4-padding;
             }
-            a=avp(b,lavpval+padding+l);   //point to avp head
+            avp temp=avp(b,lavpval+padding+l);   //point to avp head
+            a=avp(temp.copy(),temp.len);
             found=true;
             curr=curr-l;
         }else{
