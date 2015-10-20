@@ -172,6 +172,7 @@ void getDWA(avp* &allavp,int &l,int &total){
     avp realm=util.encodeString(296,0,f,ORIGIN_REALM);
     avp rc=util.encodeInt32(268, 0, f, 2001);
     total=o.len+realm.len+rc.len;
+    l=3;
     allavp=new avp[l];
     allavp[0]=o;
     allavp[1]=realm;

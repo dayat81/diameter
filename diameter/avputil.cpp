@@ -207,8 +207,8 @@ avp avputil::encodeIP(int acode, int vcode, char flags, unsigned int value[]){
     //	 for(int i=0;i<4;++i, ++ptr)
     //	    msg[3-i] = *ptr;
     //resp=resp-4;
-    
-    char *ptr1 = (char*)&l;
+    int al=l-2;
+    char *ptr1 = (char*)&al;
     ptr1=ptr1+2;
     i=0;
     while(i<3){
