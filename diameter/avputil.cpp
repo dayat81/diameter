@@ -89,13 +89,14 @@ avp avputil::getAVP(int acode, int vcode, avp a){
     return r;
 }
 
-char* return_buffer(const std::string& string)
-{
-    char* return_string = new char[string.length() + 1];
-    strcpy(return_string, string.c_str());
-    
-    return return_string;
-}
+//char* return_buffer(const std::string& string)
+//{
+//    char* return_string = new char[string.length() + 1];
+//    
+//    strcpy(return_string, string.c_str());
+//    
+//    return return_string;
+//}
 
 avp avputil::encodeString(int acode, int vcode, char flags, std::string value){
     int padding=value.length()%4;
@@ -108,7 +109,10 @@ avp avputil::encodeString(int acode, int vcode, char flags, std::string value){
     }
     //char res[l];
     char* resp=new char[l+padding];//res;
-    char* buffer = return_buffer(value);
+    char* buffer = new char[value.length() + 1];
+    
+    strcpy(buffer, value.c_str());
+    //char* buffer = return_buffer(value);
     
     
     char *ptr = (char*)&acode;
@@ -159,6 +163,8 @@ avp avputil::encodeString(int acode, int vcode, char flags, std::string value){
         buffer++;
         i++;
     }
+    buffer=buffer-value.length();
+    delete buffer;
     i=0;
     while (i<padding) {
         *resp=0x00;
