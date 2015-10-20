@@ -49,7 +49,7 @@ rocksdb::Options options;
 int main(void)
 {
     options.create_if_missing = true;
-    rocksdb::Status status = rocksdb::DB::Open(options, "/Users/dayat81/dbfile/testdb", &db);
+    rocksdb::Status status = rocksdb::DB::Open(options, DB_PATH, &db);
     assert(status.ok());
     
     int sock,sock1;
@@ -61,7 +61,7 @@ int main(void)
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
-    if (getaddrinfo(NULL, PORT, &hints, &res) != 0) {
+    if (getaddrinfo(HOST_IP, PORT, &hints, &res) != 0) {
         perror("getaddrinfo");
         return 1;
     }
@@ -70,7 +70,7 @@ int main(void)
     memset(&hints1, 0, sizeof hints1);
     hints1.ai_family = AF_INET;
     hints1.ai_socktype = SOCK_STREAM;
-    if (getaddrinfo(NULL, "1234", &hints1, &res1) != 0) {
+    if (getaddrinfo(HOST_IP, "1234", &hints1, &res1) != 0) {
         perror("getaddrinfo");
         return 1;
     }

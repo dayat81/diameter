@@ -89,9 +89,14 @@ void entry::getRAR(char* msid,avp* &allavp,int &l,int &total){
     avp sessid=util.encodeString(263, 0, f, valses);
     avp o=util.encodeString(264,0,f,ORIGIN_HOST);
     avp realm=util.encodeString(296,0,f,ORIGIN_REALM);
-    avp drealm=util.encodeString(283, 0, f, "xlggsn.id");
-    avp authappid=util.encodeInt32(258, 0, f, 16777238);
+    //read destination realm
     std::string peer=split(valses, ';')[0];
+    std::string peer_realm=peer;
+    std::string valrealm;
+    status = entry::db->Get(rocksdb::ReadOptions(),peer_realm.append("_realm"), &valrealm);
+    avp drealm=util.encodeString(283, 0, f, valrealm);
+    avp authappid=util.encodeInt32(258, 0, f, 16777238);
+    
     avp dh=util.encodeString(293, 0, f, peer);
     avp rartype=util.encodeInt32(285, 0, f, 0);
     //read rar_info
@@ -178,7 +183,7 @@ void getDWA(avp* &allavp,int &l,int &total){
     allavp[1]=realm;
     allavp[2]=rc;
 }
-void getCEA(diameter d,avp* &allavp,int &l,int &total,std::string &host){
+void entry::getCEA(diameter d,avp* &allavp,int &l,int &total,std::string &host){
     avputil util=avputil();
     
     //read avp
@@ -188,6 +193,13 @@ void getCEA(diameter d,avp* &allavp,int &l,int &total,std::string &host){
         //std::cout<<util.decodeAsString(ori_host)<<std::endl;
         host=util.decodeAsString(ori_host);
     }
+    avp ori_realm=d.getAVP(296, 0);
+    std::string orealm="";
+    if(ori_realm.len>0){
+        orealm=util.decodeAsString(ori_realm);
+    }
+    std::string peer_realm=host;
+    rocksdb::Status status = entry::db->Put(rocksdb::WriteOptions(), peer_realm.append("_realm"), orealm);
     
     char f=0x40;
     avp o=util.encodeString(264,0,f,ORIGIN_HOST);

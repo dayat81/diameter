@@ -12,6 +12,10 @@
 #include "avp.h"
 //#include <functional>
 #include <string>
+#define ORIGIN_HOST    "redir.sapctest.lte.xl.co.id"
+#define ORIGIN_REALM   "xltest.id"
+#define HOST_IP ""
+#define DB_PATH "/Users/dayat81/dbfile/testdb"
 
 class diameter{
 

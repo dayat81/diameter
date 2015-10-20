@@ -10,8 +10,7 @@
 #define logic_h
 #include "diameter.h"
 #include "rocksdb/db.h"
-#define ORIGIN_HOST    "redir.sapctest.lte.xl.co.id"
-#define ORIGIN_REALM   "xltest.id"
+
 class logic{
 public:
     rocksdb::DB* db;

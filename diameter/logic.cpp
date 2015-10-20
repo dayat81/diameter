@@ -107,29 +107,45 @@ void logic::getCCA(diameter d,avp* &allavp,int &l,int &total){
         status = db->Put(rocksdb::WriteOptions(), msidrarinfo.append("_rarinfo"), "{\"addacg\":[],\"delacg\":[]}");
         std::string val;
         status = db->Get(rocksdb::ReadOptions(), msidstring, &val);
-        
+        bool profilefound=false;
         std::cout<<val<<std::endl;
-        Document dom;
-        dom.Parse(val.c_str());
-        const Value& a = dom["acg"];
-        assert(a.IsArray());
-        
-        if(a.Size()>0){
-            avp* acg=new avp[a.Size()];
-            for (SizeType i = 0; i < a.Size(); i++){ // Uses SizeType instead of size_t
-                //printf("a[%d] = %s\n", i, a[i].GetString());   //map to charging-rule-name-avp
-                avp temp=util.encodeString(1004, 10415, 0xC0, a[i].GetString());
-                temp.dump();
-                //printf("\n");
-                *acg=temp;
-                acg++;
+        if(val==""){
+            //look for default profile
+            status = db->Get(rocksdb::ReadOptions(), "default", &val);
+            if(val!=""){
+                profilefound=true;
             }
-            acg=acg-a.Size();
-            cr_install=util.encodeAVP(1001, 10415, 0xC0, acg, a.Size());
+        }else{
+            profilefound=true;
+        }
+        if(profilefound){
+            Document dom;
+            dom.Parse(val.c_str());
+            const Value& a = dom["acg"];
+            assert(a.IsArray());
+            
+            if(a.Size()>0){
+                avp* acg=new avp[a.Size()];
+                for (SizeType i = 0; i < a.Size(); i++){ // Uses SizeType instead of size_t
+                    //printf("a[%d] = %s\n", i, a[i].GetString());   //map to charging-rule-name-avp
+                    avp temp=util.encodeString(1004, 10415, 0xC0, a[i].GetString());
+                    temp.dump();
+                    //printf("\n");
+                    *acg=temp;
+                    acg++;
+                }
+                acg=acg-a.Size();
+                cr_install=util.encodeAVP(1001, 10415, 0xC0, acg, a.Size());
+            }
         }
    
     }else if (req_type==3){
+        //get msid by sessid
+        std::string val;
+        rocksdb::Status status = db->Get(rocksdb::ReadOptions(), sessidval, &val);
+        status = db->Delete(rocksdb::WriteOptions(),val.append("_sess"));
         //delete sessid
+        status = db->Delete(rocksdb::WriteOptions(),sessidval);
     }
     char f=0x40;
     avp o=util.encodeString(264,0,f,ORIGIN_HOST);
