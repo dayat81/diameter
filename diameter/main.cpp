@@ -282,7 +282,13 @@ void *handlecommand(void *sock){
             char rarinfo[strlen(params[2])+strlen(info)];
             strcpy(rarinfo,params[2]); // copy string one into the result.
             strcat(rarinfo,info); // append string two to the result.
-            rocksdb::Status status = db->Put(rocksdb::WriteOptions(),params[2], "{\"acg\":[]}");
+            //cek if default exist the copy to msid
+            std::string valdef;
+            rocksdb::Status status = db->Get(rocksdb::ReadOptions(),"default", &valdef);
+            if(valdef==""){
+                valdef="{\"acg\":[]}";
+            }
+            status = db->Put(rocksdb::WriteOptions(),params[2], valdef);
             status = db->Put(rocksdb::WriteOptions(),rarinfo, "{\"addacg\":[],\"delacg\":[]}");
             std::cout<<val<<std::endl;
             char* value = to_char(val);

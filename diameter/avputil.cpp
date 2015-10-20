@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include "avputil.h"
+#include <stdlib.h>
 
 avputil::avputil(){
     //helper class
@@ -179,7 +180,18 @@ avp avputil::encodeString(int acode, int vcode, char flags, std::string value){
     avp a=avp(resp,l+padding);
     return a;
 }
-
+//avp avputil::encodeIP(int acode, int vcode, char flags, char *val){
+//    unsigned int valint[4];
+//    char* v = strtok(val, "#.");
+//    valint[0]=atoi(v);
+//    v = strtok(val, "#.");
+//    valint[1]=atoi(v);
+//    v = strtok(val, "#.");
+//    valint[2]=atoi(v);
+//    v = strtok(val, "#.");
+//    valint[3]=atoi(v);
+//    return encodeIP(acode, vcode, flags, valint);
+//}
 avp avputil::encodeIP(int acode, int vcode, char flags, unsigned int value[]){
     
     int l=16;

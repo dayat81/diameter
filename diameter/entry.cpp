@@ -206,7 +206,15 @@ void entry::getCEA(diameter d,avp* &allavp,int &l,int &total,std::string &host){
     avp realm=util.encodeString(296,0,f,ORIGIN_REALM);
     avp vid=util.encodeInt32(266, 0, f, 0);
     avp pn=util.encodeString(269, 0, f, "simple PCRF");
-    unsigned int ipval[4]={10,195,84,157};
+    std::vector<std::string> ips=split(HOST_IP, '.');
+    std::string::size_type sz;   // alias of size_t
+    unsigned int aa = std::stoi (ips[0],&sz);
+    unsigned int bb = std::stoi (ips[1],&sz);
+    unsigned int cc = std::stoi (ips[2],&sz);
+    unsigned int dd = std::stoi (ips[3],&sz);
+    //printf("ip %i\n",i_dec);
+    //unsigned int ipval[4]={10,195,84,157};
+    unsigned int ipval[4]={aa,bb,cc,dd};
     avp ip=util.encodeIP(257, 0, f, ipval);
     avp authappid=util.encodeInt32(258, 0, f, 16777238);
     avp svid=util.encodeInt32(265, 0, f, 10415);
