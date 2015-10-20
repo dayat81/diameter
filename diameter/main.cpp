@@ -178,6 +178,7 @@ void *handlecmd(void *socket){
             exit(EXIT_FAILURE);
         }
     }
+    pthread_exit(NULL);
     return 0;
 }
 
@@ -229,7 +230,7 @@ void *handlecommand(void *sock){
             char result[1024];
             bzero(result, 1024);
             for (it->SeekToFirst(); it->Valid(); it->Next()) {
-                std::cout << it->key().ToString() << ": " << it->value().ToString() << std::endl;
+                //std::cout << it->key().ToString() << ": " << it->value().ToString() << std::endl;
                 char* key = to_char(it->key().ToString());
                 char* val = to_char(it->value().ToString());
                 strcat(result, key);
@@ -443,6 +444,7 @@ void *handlecommand(void *sock){
     {
         //socket error occurred
     }
+    pthread_exit(NULL);
     return 0;
 }
 
@@ -484,6 +486,7 @@ void *handle(void *sock){
         }
     }
     delete h;
+    pthread_exit(NULL);
   if(n == 0)
   {
       //socket was gracefully closed
